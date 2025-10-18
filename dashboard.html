@@ -1,139 +1,83 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StudySpace Dashboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    // Load saved theme before the page renders
-    if (localStorage.getItem("theme") === "dark") {
+<script>
+  // 🧠 USER HANDLING — always allows guests
+  let user = localStorage.getItem("loggedInUser");
+  if (!user) {
+    user = "Guest";
+    localStorage.setItem("loggedInUser", "Guest");
+  }
+
+  document.getElementById("welcome").textContent = `Welcome, ${user}!`;
+
+  // 🕒 LIVE TIME DISPLAY
+  function updateTime() {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+    document.getElementById("time").textContent = timeStr;
+  }
+  setInterval(updateTime, 1000);
+  updateTime();
+
+  // 📝 EXAMPLE ASSIGNMENTS
+  const assignments = [
+    { class: "Math", title: "Chapter 3 Homework", due: "2025-10-20", desc: "Page 42, #1–10" },
+    { class: "English", title: "Essay Draft", due: "2025-10-18", desc: "Shakespeare analysis" },
+    { class: "Science", title: "Lab Report", due: "2025-10-21", desc: "Newton’s Laws experiment" },
+  ];
+
+  const container = document.getElementById("assignments");
+  container.innerHTML = ""; // clear if already rendered
+  assignments.forEach(a => {
+    const card = document.createElement("div");
+    card.className = "bg-white dark:bg-gray-800 rounded-2xl shadow p-4 border dark:border-gray-700";
+    card.innerHTML = `
+      <h3 class="text-lg font-semibold">${a.title}</h3>
+      <p class="text-gray-600 dark:text-gray-300">${a.desc}</p>
+      <p class="text-sm text-gray-400 mt-2">Due: ${a.due}</p>
+    `;
+    container.appendChild(card);
+  });
+
+  // 🎨 THEME HANDLING
+  const themeToggle = document.getElementById("themeToggle");
+
+  // Set initial theme state
+  if (localStorage.getItem("theme") === "dark") {
+    document.documentElement.classList.add("dark");
+    if (themeToggle) themeToggle.checked = true;
+  }
+
+  // Toggle theme when switch changes
+  themeToggle?.addEventListener("change", (e) => {
+    if (e.target.checked) {
       document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
     }
-  </script>
-</head>
+  });
 
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex min-h-screen transition-colors duration-300">
+  // ⚙️ SETTINGS MODAL
+  function openSettings() {
+    document.getElementById("settingsModal").classList.remove("hidden");
+  }
 
-  <!-- Sidebar -->
-  <aside class="w-64 bg-white dark:bg-gray-800 shadow-lg flex flex-col justify-between">
-    <div>
-      <h2 class="text-2xl font-bold text-indigo-600 dark:text-indigo-400 p-4">StudySpace</h2>
-      <nav class="px-4 space-y-1">
-        <a href="dashboard.html" class="block py-2 px-3 rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300 font-medium">🏠 Dashboard</a>
-        <a href="#" class="block py-2 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">📚 Classes</a>
-        <a href="#" class="block py-2 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">📝 Assignments</a>
-        <button onclick="openSettings()" class="w-full text-left py-2 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">⚙️ Settings</button>
-      </nav>
-    </div>
-    <div class="p-4 border-t dark:border-gray-700">
-      <button onclick="logout()" class="w-full py-2 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30">
-        🚪 Logout
-      </button>
-    </div>
-  </aside>
+  function closeSettings() {
+    document.getElementById("settingsModal").classList.add("hidden");
+  }
 
-  <!-- Main Content -->
-  <main class="flex-1 p-6">
-    <header class="flex justify-between items-center mb-6">
-      <div>
-        <h1 class="text-3xl font-semibold text-indigo-700 dark:text-indigo-400">Dashboard</h1>
-        <p id="welcome" class="text-gray-600 dark:text-gray-400"></p>
-      </div>
-      <div class="text-right">
-        <p class="text-sm text-gray-400 dark:text-gray-500">Local Time</p>
-        <h2 id="time" class="text-2xl font-mono font-semibold text-gray-800 dark:text-gray-200"></h2>
-      </div>
-    </header>
+  // 🚪 LOGOUT — now just switches to Guest mode (no redirect)
+  function logout() {
+    localStorage.setItem("loggedInUser", "Guest");
+    document.getElementById("welcome").textContent = "Welcome, Guest!";
+  }
 
-    <section id="assignments" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></section>
-  </main>
-
-  <!-- Settings Modal -->
-  <div id="settingsModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 w-80">
-      <h2 class="text-xl font-semibold mb-4 text-indigo-600 dark:text-indigo-400">Settings</h2>
-
-      <div class="flex items-center justify-between mb-6">
-        <span class="text-gray-700 dark:text-gray-300">Dark Mode</span>
-        <label class="relative inline-flex items-center cursor-pointer">
-          <input type="checkbox" id="themeToggle" class="sr-only peer">
-          <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700
-                      peer-checked:after:translate-x-full peer-checked:after:border-white after:content-['']
-                      after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 
-                      after:border after:rounded-full after:h-5 after:w-5 after:transition-all
-                      peer-checked:bg-indigo-600"></div>
-        </label>
-      </div>
-
-      <button onclick="closeSettings()" class="w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500">Close</button>
-    </div>
-  </div>
-
-  <script>
-    // Welcome user
-    const user = localStorage.getItem("loggedInUser");
-    const welcome = document.getElementById("welcome");
-    if (!user) window.location.href = "index.html";
-    else welcome.textContent = `Welcome, ${user}!`;
-
-    
-    function updateTime() {
-      const now = new Date();
-      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      document.getElementById("time").textContent = timeStr;
-    }
-    setInterval(updateTime, 1000);
-    updateTime();
-
-    // Example assignments
-    const assignments = [
-      { class: "Math", title: "Chapter 3 Homework", due: "2025-10-20", desc: "Page 42, #1–10" },
-      { class: "English", title: "Essay Draft", due: "2025-10-18", desc: "Shakespeare analysis" },
-      { class: "Science", title: "Lab Report", due: "2025-10-21", desc: "Newton’s Laws experiment" },
-    ];
-
-    const container = document.getElementById("assignments");
-    assignments.forEach(a => {
-      const card = document.createElement("div");
-      card.className = "bg-white dark:bg-gray-800 rounded-2xl shadow p-4 border dark:border-gray-700";
-      card.innerHTML = `
-        <h3 class="text-lg font-semibold">${a.title}</h3>
-        <p class="text-gray-600 dark:text-gray-300">${a.desc}</p>
-        <p class="text-sm text-gray-400 mt-2">Due: ${a.due}</p>
-      `;
-      container.appendChild(card);
-    });
-
-    // Theme handling
-    const themeToggle = document.getElementById("themeToggle");
-    if (localStorage.getItem("theme") === "dark") {
-      themeToggle.checked = true;
-    }
-
-    themeToggle?.addEventListener("change", (e) => {
-      if (e.target.checked) {
-        document.documentElement.classList.add("dark");
-        localStorage.setItem("theme", "dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-        localStorage.setItem("theme", "light");
-      }
-    });
-
-    // Settings modal controls
-    function openSettings() {
-      document.getElementById("settingsModal").classList.remove("hidden");
-    }
-    function closeSettings() {
-      document.getElementById("settingsModal").classList.add("hidden");
-    }
-
-    function logout() {
-      localStorage.removeItem("loggedInUser");
-      window.location.href = "index.html";
-    }
-  </script>
-</body>
-</html>
-
+  // Expose modal and logout functions globally
+  window.openSettings = openSettings;
+  window.closeSettings = closeSettings;
+  window.logout = logout;
+</script>
