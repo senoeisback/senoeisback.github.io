@@ -109,6 +109,16 @@ backdrop-filter:blur(10px);border-left:1px solid rgba(0,255,255,0.3);z-index:50;
     </div>
     <button id="applyFont" class="bg-cyan-400 text-black px-4 py-2 rounded w-full mb-2">Apply Font</button>
 
+    <!-- Dynamic Island Colors -->
+    <div class="mb-4">
+      <label class="block mb-1">Dynamic Island Background</label>
+      <input type="color" id="dynBgColorPicker" value="#000000" class="w-full h-8 cursor-pointer">
+    </div>
+    <div class="mb-4">
+      <label class="block mb-1">Dynamic Island Text</label>
+      <input type="color" id="dynTextColorPicker" value="#00ffff" class="w-full h-8 cursor-pointer">
+    </div>
+
     <!-- Background Media -->
     <div class="mb-4">
       <label class="block mb-1">Background Media (URL)</label>
@@ -241,6 +251,27 @@ applyFontBtn.addEventListener("click", () => {
   const font = fontInput.value.trim() || "Arial, sans-serif";
   updateFont(font);
   localStorage.setItem("dashboardFont", font);
+});
+
+// DYNAMIC ISLAND COLORS
+const dynIsland = document.getElementById("dynIsland");
+const dynBgPicker = document.getElementById("dynBgColorPicker");
+const dynTextPicker = document.getElementById("dynTextColorPicker");
+
+const savedDynBg = localStorage.getItem("dynBgColor");
+if(savedDynBg){ dynIsland.style.backgroundColor = savedDynBg; dynBgPicker.value = savedDynBg; }
+
+const savedDynText = localStorage.getItem("dynTextColor");
+if(savedDynText){ dynIsland.style.color = savedDynText; dynTextPicker.value = savedDynText; }
+
+dynBgPicker.addEventListener("input", e=>{
+  dynIsland.style.backgroundColor = e.target.value;
+  localStorage.setItem("dynBgColor", e.target.value);
+});
+
+dynTextPicker.addEventListener("input", e=>{
+  dynIsland.style.color = e.target.value;
+  localStorage.setItem("dynTextColor", e.target.value);
 });
 
 // BACKGROUND IMAGE/VIDEO
