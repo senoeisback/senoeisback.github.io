@@ -142,7 +142,7 @@ document.addEventListener("mousemove",e=>{
   }
 });
 
-/* WIDGETS (Predefined only, positions saved) */
+/* WIDGETS */
 const GRID_SIZE=20;
 let widgets=JSON.parse(localStorage.getItem('widgets'));
 if(!widgets){
@@ -157,12 +157,12 @@ function createWidget({id, top, left, title, content, width=220, height=120}){
   document.body.appendChild(w); makeDraggable(id);
 }
 
-// Draggable with grid snapping and saving
+// Draggable with grid snapping & saving positions immediately
 function makeDraggable(widgetId){
   const w=document.getElementById(widgetId);
   let dragging=false, wx=0, wy=0;
   w.addEventListener("mousedown", e=>{ dragging=true; wx=e.clientX-w.offsetLeft; wy=e.clientY-w.offsetTop; w.classList.add("dragging");});
-  document.addEventListener("mouseup", ()=>{ dragging=false; w.classList.remove("dragging"); localStorage.setItem('widgets',JSON.stringify(widgets)); });
+  document.addEventListener("mouseup", ()=>{ dragging=false; w.classList.remove("dragging"); });
   document.addEventListener("mousemove", e=>{
     if(dragging){
       let x=e.clientX-wx, y=e.clientY-wy;
@@ -170,8 +170,12 @@ function makeDraggable(widgetId){
       x=Math.max(0, Math.min(x, window.innerWidth-w.offsetWidth));
       y=Math.max(0, Math.min(y, window.innerHeight-w.offsetHeight));
       w.style.left=`${x}px`; w.style.top=`${y}px`;
-      const index=widgets.findIndex(widget=>widget.id===widgetId);
-      if(index!==-1){ widgets[index].top=y; widgets[index].left=x; }
+      const index = widgets.findIndex(widget => widget.id === widgetId);
+      if(index !== -1){
+        widgets[index].top = y;
+        widgets[index].left = x;
+        localStorage.setItem('widgets', JSON.stringify(widgets));
+      }
     }
   });
 }
@@ -218,6 +222,7 @@ applyBgBtn.addEventListener("click",()=>{
 });
 const savedBg=localStorage.getItem("backgroundMedia");
 if(savedBg){ bgInput.value=savedBg; applyBgBtn.click(); }
+
 </script>
 </body>
 </html>
