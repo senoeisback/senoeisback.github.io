@@ -4,15 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CopperMier — Dashboard</title>
+
+<!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Comfortaa Font -->
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap" rel="stylesheet">
+
 <style>
 body {
-  margin:0; font-family:'Fira Code', monospace; overflow:hidden;
+  margin:0; font-family:'Comfortaa', cursive; overflow:hidden;
   background-color:#121212; color:white; --accent-color:#00ffff; --text-color:#ffffff;
 }
 
-/* Dynamic Island */
+/* Dynamic Island keeps Fira Code */
 .dyn-island{
+  font-family:'Fira Code', monospace;
   width:120px;height:38px;border-radius:9999px;background-color:#000;color:var(--accent-color);
   display:flex;align-items:center;justify-content:center;padding:6px 12px;
   transition:width 260ms cubic-bezier(.2,.9,.2,1), height 220ms, box-shadow 200ms;
@@ -109,13 +116,13 @@ backdrop-filter:blur(10px);border-left:1px solid rgba(0,255,255,0.3);z-index:50;
 </div>
 
 <script>
-/* USER & TIME */
+// USER & TIME
 let user=localStorage.getItem("loggedInUser")||"Guest";
 localStorage.setItem("loggedInUser",user);
 function updateTime(){ const now=new Date(); document.getElementById("islandTime").textContent=now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
 setInterval(updateTime,1000); updateTime();
 
-/* THEME & SETTINGS */
+// THEME & SETTINGS
 const themeToggle=document.getElementById("themeToggle");
 if(localStorage.getItem('theme')==='dark'){ document.documentElement.classList.add('dark'); themeToggle.checked=true; }
 themeToggle?.addEventListener('change',e=>{
@@ -127,28 +134,44 @@ function closeSettings(){ document.getElementById("settingsModal").classList.add
 function logout(){ localStorage.setItem("loggedInUser","Guest"); alert("Logged out! Guest mode activated."); }
 window.openSettings=openSettings; window.closeSettings=closeSettings; window.logout=logout;
 
-/* DYNAMIC ISLAND DRAG */
+// DYNAMIC ISLAND DRAG & SAVE
+let islandPos=JSON.parse(localStorage.getItem('islandPos')) || { top:14, left:(window.innerWidth/2 - 60) };
 const islandWrap=document.getElementById("islandWrap");
+islandWrap.style.top=islandPos.top+'px';
+islandWrap.style.left=islandPos.left+'px';
 let isDragging=false,offsetX=0,offsetY=0;
-islandWrap.addEventListener("mousedown",e=>{ isDragging=true; offsetX=e.clientX-islandWrap.offsetLeft; offsetY=e.clientY-islandWrap.offsetTop; islandWrap.classList.add("dragging"); });
-document.addEventListener("mouseup",()=>{ isDragging=false; islandWrap.classList.remove("dragging"); });
-document.addEventListener("mousemove",e=>{
+
+islandWrap.addEventListener("mousedown", e=>{
+  isDragging=true;
+  offsetX=e.clientX-islandWrap.offsetLeft;
+  offsetY=e.clientY-islandWrap.offsetTop;
+  islandWrap.classList.add("dragging");
+});
+
+document.addEventListener("mouseup", ()=>{
   if(isDragging){
-    let x=e.clientX-offsetX,y=e.clientY-offsetY;
-    x=Math.round(x/20)*20; y=Math.round(y/20)*20; // GRID SNAP
-    x=Math.max(0,Math.min(x,window.innerWidth-islandWrap.offsetWidth));
-    y=Math.max(0,Math.min(y,window.innerHeight-islandWrap.offsetHeight));
-    islandWrap.style.left=`${x}px`; islandWrap.style.top=`${y}px`; islandWrap.style.transform=`none`;
+    isDragging=false;
+    islandWrap.classList.remove("dragging");
+    localStorage.setItem('islandPos', JSON.stringify({ top: parseInt(islandWrap.style.top), left: parseInt(islandWrap.style.left) }));
   }
 });
 
-/* WIDGETS */
+document.addEventListener("mousemove", e=>{
+  if(isDragging){
+    let x=e.clientX-offsetX, y=e.clientY-offsetY;
+    const GRID=20;
+    x=Math.round(x/GRID)*GRID; y=Math.round(y/GRID)*GRID;
+    x=Math.max(0,Math.min(x,window.innerWidth-islandWrap.offsetWidth));
+    y=Math.max(0,Math.min(y,window.innerHeight-islandWrap.offsetHeight));
+    islandWrap.style.left=x+'px';
+    islandWrap.style.top=y+'px';
+    localStorage.setItem('islandPos', JSON.stringify({ top:y, left:x }));
+  }
+});
+
+// WIDGETS
 const GRID_SIZE=20;
-let widgets=JSON.parse(localStorage.getItem('widgets'));
-if(!widgets){
-  widgets=[{ id:'assignmentsWidget', top:100, left:100, title:'Assignments', content:'', width:220, height:120 }];
-  localStorage.setItem('widgets',JSON.stringify(widgets));
-}
+let widgets=JSON.parse(localStorage.getItem('widgets')) || [{ id:'assignmentsWidget', top:100, left:100, title:'Assignments', content:'', width:220, height:120 }];
 
 function createWidget({id, top, left, title, content, width=220, height=120}){
   const w=document.createElement('div'); w.className='widget'; w.id=id;
@@ -157,7 +180,6 @@ function createWidget({id, top, left, title, content, width=220, height=120}){
   document.body.appendChild(w); makeDraggable(id);
 }
 
-// Draggable with grid snapping & saving positions immediately
 function makeDraggable(widgetId){
   const w=document.getElementById(widgetId);
   let dragging=false, wx=0, wy=0;
@@ -183,7 +205,7 @@ function makeDraggable(widgetId){
 // Load widgets
 widgets.forEach(createWidget);
 
-/* ACCENT COLOR */
+// ACCENT COLOR
 const accentPicker=document.getElementById('accentColorPicker');
 function updateAccentColor(color){
   document.documentElement.style.setProperty('--accent-color', color);
@@ -195,17 +217,17 @@ const savedAccent=localStorage.getItem('accentColor');
 if(savedAccent){ accentPicker.value=savedAccent; updateAccentColor(savedAccent); }
 accentPicker.addEventListener("input", e=>{ updateAccentColor(e.target.value); localStorage.setItem('accentColor',e.target.value); });
 
-/* TEXT COLOR */
+// TEXT COLOR
 const textColorPicker=document.getElementById('textColorPicker');
 function updateTextColor(color){
   document.documentElement.style.setProperty('--text-color',color);
   document.querySelectorAll('.widget').forEach(w=>{ w.style.color=color; });
 }
-const savedTextColor=localStorage.getItem('textColor');
+const savedTextColor=localStorage.getItem("textColor");
 if(savedTextColor){ textColorPicker.value=savedTextColor; updateTextColor(savedTextColor); }
-textColorPicker.addEventListener('input',e=>{ updateTextColor(e.target.value); localStorage.setItem('textColor',e.target.value); });
+textColorPicker.addEventListener("input", e=>{ updateTextColor(e.target.value); localStorage.setItem('textColor',e.target.value); });
 
-/* BACKGROUND IMAGE/VIDEO */
+// BACKGROUND IMAGE/VIDEO
 const bgInput=document.getElementById("backgroundMedia");
 const applyBgBtn=document.getElementById("applyBackground");
 applyBgBtn.addEventListener("click",()=>{
