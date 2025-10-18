@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard — CopperMier</title>
+  <title>Dashboard — StudySpace</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Dynamic Island Base */
+    /* ---------------- Dynamic Island ---------------- */
     .dyn-island {
       width: 120px;
       height: 38px;
@@ -16,7 +16,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: 12px;
       padding: 6px 12px;
       transition: width 260ms cubic-bezier(.2,.9,.2,1), height 220ms, box-shadow 200ms;
       cursor: default;
@@ -46,35 +46,16 @@
 
     /* Hover expand */
     .dyn-island:hover {
-      width: 280px;
-      height: 80px;
+      width: 180px;
+      height: 48px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.7);
     }
 
-    /* Time text */
     .dyn-island .time {
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
       font-weight: 700;
       letter-spacing: 0.6px;
-      transition: all 200ms;
       z-index: 10;
-    }
-
-    /* Details inside island */
-    .dyn-island .detail {
-      opacity: 0;
-      transform: translateY(6px);
-      transition: opacity 200ms, transform 200ms;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      z-index: 10;
-    }
-
-    /* Show details on hover */
-    .dyn-island:hover .detail {
-      opacity: 1;
-      transform: translateY(0);
     }
 
     .island-wrap {
@@ -88,22 +69,18 @@
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
 
-  <!-- Dynamic Island -->
+  <!-- ---------------- Dynamic Island ---------------- -->
   <div class="island-wrap">
     <div id="dynIsland" class="dyn-island">
       <div class="time" id="islandTime">--:--:--</div>
-      <div class="detail" id="islandDetails">
-        <div id="nextTitle" class="font-semibold truncate">Welcome to CopperMier</div>
-        <div id="nextDue" class="text-xs text-gray-300 mt-1">Hover to see details</div>
-      </div>
     </div>
   </div>
 
-  <!-- Sidebar -->
+  <!-- ---------------- Sidebar ---------------- -->
   <div class="flex min-h-screen">
     <aside class="w-64 bg-white dark:bg-gray-800 shadow-lg p-4 flex flex-col justify-between">
       <div>
-        <h1 class="text-2xl font-bold mb-4 text-indigo-700 dark:text-indigo-300">CopperMier</h1>
+        <h1 class="text-2xl font-bold mb-4 text-indigo-700 dark:text-indigo-300">StudySpace</h1>
         <nav class="space-y-2">
           <a href="dashboard.html" class="block p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700">🏠 Dashboard</a>
           <a href="assignments.html" class="block p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700">📝 Assignments</a>
@@ -113,7 +90,7 @@
       <button onclick="logout()" class="mt-4 w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg">Logout</button>
     </aside>
 
-    <!-- Main -->
+    <!-- ---------------- Main ---------------- -->
     <main class="flex-1 p-8 flex flex-col items-center justify-center text-center">
       <h2 id="welcome" class="text-4xl font-semibold mb-2">Welcome!</h2>
       <p class="text-gray-500 dark:text-gray-400 text-lg mb-6">Your all-in-one school workspace</p>
@@ -121,7 +98,7 @@
     </main>
   </div>
 
-  <!-- Settings Modal -->
+  <!-- ---------------- Settings Modal ---------------- -->
   <div id="settingsModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
     <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg w-80">
       <h3 class="text-xl font-semibold mb-4">Settings</h3>
@@ -138,17 +115,14 @@
     </div>
   </div>
 
+  <!-- ---------------- Script ---------------- -->
   <script>
-    // -----------------------
-    // Guest Mode Handling
-    // -----------------------
+    // Guest mode
     let user = localStorage.getItem("loggedInUser") || "Guest";
     localStorage.setItem("loggedInUser", user);
     document.getElementById("welcome").textContent = `Welcome, ${user}!`;
 
-    // -----------------------
-    // Live Time
-    // -----------------------
+    // Live time
     function updateTime() {
       const now = new Date();
       const timeStr = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
@@ -158,55 +132,30 @@
     setInterval(updateTime, 1000);
     updateTime();
 
-    // -----------------------
-    // Assignments (sample)
-    // -----------------------
-    const assignments = [
-      { class: "Math", title: "Chapter 3 Homework", due: "2025-10-20T23:59:00" },
-      { class: "English", title: "Essay Draft", due: "2025-10-18T17:00:00" },
-      { class: "Science", title: "Lab Report", due: "2025-10-21T12:00:00" },
-    ];
-
-    function getNextAssignment() {
-      const now = new Date();
-      const future = assignments
-        .map(a => ({...a, dueDate: new Date(a.due)}))
-        .filter(a => a.dueDate > now)
-        .sort((x,y) => x.dueDate - y.dueDate);
-      return future.length ? future[0] : null;
-    }
-
-    function refreshIslandDetails() {
-      const next = getNextAssignment();
-      if(next){
-        document.getElementById("nextTitle").textContent = `${next.title} · ${next.class}`;
-        document.getElementById("nextDue").textContent = `Due ${new Date(next.due).toLocaleString()}`;
-      }
-    }
-    refreshIslandDetails();
-
-    // -----------------------
-    // Theme Handling
-    // -----------------------
+    // Theme toggle
     const themeToggle = document.getElementById("themeToggle");
-    if(localStorage.getItem('theme')==='dark'){document.documentElement.classList.add('dark'); themeToggle.checked=true;}
+    if(localStorage.getItem('theme')==='dark'){
+      document.documentElement.classList.add('dark'); 
+      themeToggle.checked=true;
+    }
     themeToggle?.addEventListener('change', e=>{
-      if(e.target.checked){document.documentElement.classList.add('dark'); localStorage.setItem('theme','dark');}
-      else{document.documentElement.classList.remove('dark'); localStorage.setItem('theme','light');}
+      if(e.target.checked){
+        document.documentElement.classList.add('dark'); 
+        localStorage.setItem('theme','dark');
+      } else {
+        document.documentElement.classList.remove('dark'); 
+        localStorage.setItem('theme','light');
+      }
     });
 
-    // -----------------------
-    // Settings Modal + Logout
-    // -----------------------
-    function openSettings(){document.getElementById("settingsModal").classList.remove("hidden");}
-    function closeSettings(){document.getElementById("settingsModal").classList.add("hidden");}
+    // Settings modal + logout
+    function openSettings(){ document.getElementById("settingsModal").classList.remove("hidden"); }
+    function closeSettings(){ document.getElementById("settingsModal").classList.add("hidden"); }
     function logout(){
       localStorage.setItem("loggedInUser","Guest");
       document.getElementById("welcome").textContent="Welcome, Guest!";
     }
-    window.openSettings=openSettings;
-    window.closeSettings=closeSettings;
-    window.logout=logout;
+    window.openSettings=openSettings; window.closeSettings=closeSettings; window.logout=logout;
   </script>
 </body>
 </html>
