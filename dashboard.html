@@ -6,56 +6,53 @@
 <title>Dashboard — StudySpace Rice Setup</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
+/* --------- BODY DARK THEME --------- */
 body {
-  margin: 0;
-  font-family: 'Fira Code', monospace;
-  overflow: hidden;
-  --accent-color: #00ffff;
-  /* default dark gradient */
-  background: linear-gradient(135deg, #1e1e2f, #2e2e3f, #1e1e2f);
-  background-size: 400% 400%;
-  animation: gradientAnim 20s ease infinite;
+  margin:0;
+  font-family:'Fira Code', monospace;
+  overflow:hidden;
+  background-color:#121212;
+  color:white;
+  --accent-color:#00ffff;
 }
-@keyframes gradientAnim { 0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%} }
 
-.dyn-island {
-  width: 120px;
-  height: 38px;
-  border-radius: 9999px;
-  background-color: #000;
-  color: var(--accent-color);
-  display: flex; align-items: center; justify-content: center;
-  padding: 6px 12px;
-  transition: width 260ms cubic-bezier(.2,.9,.2,1), height 220ms, box-shadow 200ms;
-  cursor: grab; position: relative; overflow: hidden;
-  font-size: 0.9rem; font-weight:700; letter-spacing:0.6px;
+/* --------- DYNAMIC ISLAND --------- */
+.dyn-island{
+  width:120px;height:38px;border-radius:9999px;background-color:#000;color:var(--accent-color);
+  display:flex;align-items:center;justify-content:center;padding:6px 12px;
+  transition:width 260ms cubic-bezier(.2,.9,.2,1), height 220ms, box-shadow 200ms;
+  cursor:grab;position:relative;overflow:hidden;font-size:0.9rem;font-weight:700;letter-spacing:0.6px;
 }
-.dyn-island::before {
-  content:'';
-  position:absolute; top:-50%; left:-50%; width:200%; height:200%;
+.dyn-island::before{
+  content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
   background:radial-gradient(circle, rgba(0,255,255,0.3) 0%, rgba(0,255,255,0) 70%);
   opacity:0.4; animation:breathe 4s ease-in-out infinite; border-radius:9999px; pointer-events:none;
 }
-@keyframes breathe {0%,100%{transform:scale(1);opacity:0.4}50%{transform:scale(1.05);opacity:0.6}}
-.dyn-island:hover {width:180px;height:48px;box-shadow:0 10px 30px var(--accent-color)80}
-.dyn-island .time {white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex-shrink:0; z-index:10;}
-.island-wrap {position:absolute; left:50%; top:14px; transform:translateX(-50%); z-index:60;}
-.island-wrap.dragging {cursor:grabbing;}
+@keyframes breathe{0%,100%{transform:scale(1);opacity:0.4}50%{transform:scale(1.05);opacity:0.6}}
+.dyn-island:hover{width:180px;height:48px;box-shadow:0 10px 30px var(--accent-color)80}
+.dyn-island .time{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;z-index:10;}
+.island-wrap{position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:60;}
+.island-wrap.dragging{cursor:grabbing;}
 
-.sidebar-wrapper {position:fixed; top:0; right:0; width:16px; height:100%; z-index:40;}
-.sidebar {position:fixed; right:-240px; top:0; width:240px; height:100%;
-  background-color: rgba(0,0,0,0.7); color:var(--accent-color);
-  box-shadow:-2px 0 20px rgba(0,255,255,0.2); display:flex; flex-direction:column;
-  justify-content:space-between; padding:1rem; transition:right 0.3s ease, background-color 0.3s ease;
-  backdrop-filter: blur(10px); border-left:1px solid rgba(0,255,255,0.3); z-index:50;
-}
-.sidebar-wrapper:hover .sidebar { right:0; }
+/* --------- SIDEBAR --------- */
+.sidebar-wrapper{position:fixed;top:0;right:0;width:16px;height:100%;z-index:40;}
+.sidebar{position:fixed;right:-240px;top:0;width:240px;height:100%;background-color: rgba(0,0,0,0.7);
+color:var(--accent-color);box-shadow:-2px 0 20px rgba(0,255,255,0.2);display:flex;flex-direction:column;
+justify-content:space-between;padding:1rem;transition:right 0.3s ease, background-color 0.3s ease;
+backdrop-filter:blur(10px);border-left:1px solid rgba(0,255,255,0.3);z-index:50;}
+.sidebar-wrapper:hover .sidebar{right:0;}
 
-.widget {position:absolute; width:220px; min-height:120px; background-color:rgba(0,0,0,0.6);
-  color:var(--accent-color); backdrop-filter:blur(10px); border-radius:1rem; padding:1rem;
-  box-shadow:0 10px 25px rgba(0,255,255,0.3); cursor:grab;
+/* --------- WIDGETS --------- */
+.widget{
+  position:absolute;width:220px;min-height:120px;background-color:rgba(0,0,0,0.6);
+  color:var(--accent-color);backdrop-filter:blur(10px);border-radius:1rem;padding:1rem;
+  box-shadow:0 10px 25px rgba(0,255,255,0.3);cursor:grab;overflow:hidden;
 }
-.widget.dragging {cursor:grabbing;}
+.widget.dragging{cursor:grabbing;}
+.resizer{
+  width:12px;height:12px;background:var(--accent-color);position:absolute;
+  bottom:4px;right:4px;cursor:se-resize;border-radius:2px;
+}
 </style>
 </head>
 <body>
@@ -67,7 +64,7 @@ body {
   </div>
 </div>
 
-<!-- Right Sidebar -->
+<!-- Sidebar -->
 <div class="sidebar-wrapper">
   <aside class="sidebar">
     <div>
@@ -115,74 +112,92 @@ body {
 </div>
 
 <script>
-let user = localStorage.getItem("loggedInUser") || "Guest";
-localStorage.setItem("loggedInUser", user);
+/* --------- USER & TIME --------- */
+let user=localStorage.getItem("loggedInUser")||"Guest";
+localStorage.setItem("loggedInUser",user);
 
-// Live time
-function updateTime() {
-  const now = new Date();
-  const timeStr = now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  document.getElementById("islandTime").textContent = timeStr;
+function updateTime(){
+  const now=new Date();
+  document.getElementById("islandTime").textContent=now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
 }
 setInterval(updateTime,1000); updateTime();
 
-// Theme toggle
-const themeToggle = document.getElementById("themeToggle");
-if(localStorage.getItem('theme')==='dark'){ document.documentElement.classList.add('dark'); themeToggle.checked=true;}
-themeToggle?.addEventListener('change', e=>{
-  if(e.target.checked){ document.documentElement.classList.add('dark'); localStorage.setItem('theme','dark');}
-  else{ document.documentElement.classList.remove('dark'); localStorage.setItem('theme','light');}
+/* --------- THEME & SETTINGS --------- */
+const themeToggle=document.getElementById("themeToggle");
+if(localStorage.getItem('theme')==='dark'){ document.documentElement.classList.add('dark'); themeToggle.checked=true; }
+themeToggle?.addEventListener('change',e=>{
+  if(e.target.checked){ document.documentElement.classList.add('dark'); localStorage.setItem('theme','dark'); }
+  else{ document.documentElement.classList.remove('dark'); localStorage.setItem('theme','light'); }
 });
 
-// Settings modal + logout
 function openSettings(){ document.getElementById("settingsModal").classList.remove("hidden"); }
 function closeSettings(){ document.getElementById("settingsModal").classList.add("hidden"); }
 function logout(){ localStorage.setItem("loggedInUser","Guest"); alert("Logged out! Guest mode activated."); }
 window.openSettings=openSettings; window.closeSettings=closeSettings; window.logout=logout;
 
-// Dynamic Island drag
-const islandWrap = document.getElementById("islandWrap");
-let isDragging=false, offsetX=0, offsetY=0;
-islandWrap.addEventListener("mousedown", e=>{isDragging=true; offsetX=e.clientX-islandWrap.offsetLeft; offsetY=e.clientY-islandWrap.offsetTop; islandWrap.classList.add("dragging");});
-document.addEventListener("mouseup", ()=>{isDragging=false; islandWrap.classList.remove("dragging");});
-document.addEventListener("mousemove", e=>{
+/* --------- DYNAMIC ISLAND DRAG --------- */
+const islandWrap=document.getElementById("islandWrap");
+let isDragging=false,offsetX=0,offsetY=0;
+islandWrap.addEventListener("mousedown",e=>{ isDragging=true; offsetX=e.clientX-islandWrap.offsetLeft; offsetY=e.clientY-islandWrap.offsetTop; islandWrap.classList.add("dragging"); });
+document.addEventListener("mouseup",()=>{ isDragging=false; islandWrap.classList.remove("dragging"); });
+document.addEventListener("mousemove",e=>{
   if(isDragging){
-    let x=e.clientX-offsetX, y=e.clientY-offsetY;
+    let x=e.clientX-offsetX,y=e.clientY-offsetY;
     x=Math.max(0,Math.min(x,window.innerWidth-islandWrap.offsetWidth));
     y=Math.max(0,Math.min(y,window.innerHeight-islandWrap.offsetHeight));
     islandWrap.style.left=`${x}px`; islandWrap.style.top=`${y}px`; islandWrap.style.transform=`none`;
   }
 });
 
-// Widgets system
+/* --------- WIDGET SYSTEM --------- */
 let widgets = JSON.parse(localStorage.getItem('widgets'))||[];
 
-// Create widget
-function createWidget({id, top, left, title, content}){
-  const w = document.createElement('div');
-  w.className='widget';
-  w.id=id;
-  w.style.top=top+'px';
-  w.style.left=left+'px';
-  w.innerHTML=`<h3 class="text-lg font-semibold mb-2">${title}</h3><p class="text-sm">${content}</p>`;
+// Create widget with size
+function createWidget({id, top, left, title, content, width=220, height=120}){
+  const w=document.createElement('div');
+  w.className='widget'; w.id=id;
+  w.style.top=top+'px'; w.style.left=left+'px';
+  w.style.width=width+'px'; w.style.height=height+'px';
+  w.innerHTML=`<h3 class="text-lg font-semibold mb-2">${title}</h3><p class="text-sm">${content}</p><div class="resizer"></div>`;
   document.body.appendChild(w);
-  makeDraggable(id);
+  makeDraggable(id); makeResizable(id);
 }
 
-// Make draggable with save
+// Draggable
 function makeDraggable(widgetId){
-  const w = document.getElementById(widgetId);
+  const w=document.getElementById(widgetId);
   let dragging=false, wx=0, wy=0;
   w.addEventListener("mousedown", e=>{ dragging=true; wx=e.clientX-w.offsetLeft; wy=e.clientY-w.offsetTop; w.classList.add("dragging");});
-  document.addEventListener("mouseup", ()=>{ dragging=false; w.classList.remove("dragging");});
+  document.addEventListener("mouseup", ()=>{ dragging=false; w.classList.remove("dragging"); });
   document.addEventListener("mousemove", e=>{
     if(dragging){
-      let x=e.clientX-wx, y=e.clientY-wy;
+      let x=e.clientX-wx,y=e.clientY-wy;
       x=Math.max(0,Math.min(x,window.innerWidth-w.offsetWidth));
       y=Math.max(0,Math.min(y,window.innerHeight-w.offsetHeight));
       w.style.left=`${x}px`; w.style.top=`${y}px`;
-      const index = widgets.findIndex(wi=>wi.id===widgetId);
+      const index=widgets.findIndex(widget=>widget.id===widgetId);
       if(index!==-1){ widgets[index].top=y; widgets[index].left=x; localStorage.setItem('widgets',JSON.stringify(widgets)); }
+    }
+  });
+}
+
+// Resizable
+function makeResizable(widgetId){
+  const w=document.getElementById(widgetId);
+  const resizer=w.querySelector('.resizer');
+  let resizing=false,startX=0,startY=0,startWidth=0,startHeight=0;
+  resizer.addEventListener('mousedown',e=>{
+    e.stopPropagation();
+    resizing=true; startX=e.clientX; startY=e.clientY; startWidth=w.offsetWidth; startHeight=w.offsetHeight;
+    w.classList.add('dragging');
+  });
+  document.addEventListener('mouseup',()=>{ resizing=false; w.classList.remove('dragging'); });
+  document.addEventListener('mousemove',e=>{
+    if(resizing){
+      let newWidth=startWidth+(e.clientX-startX), newHeight=startHeight+(e.clientY-startY);
+      w.style.width=newWidth+'px'; w.style.height=newHeight+'px';
+      const index=widgets.findIndex(widget=>widget.id===widgetId);
+      if(index!==-1){ widgets[index].width=newWidth; widgets[index].height=newHeight; localStorage.setItem('widgets',JSON.stringify(widgets)); }
     }
   });
 }
@@ -190,18 +205,17 @@ function makeDraggable(widgetId){
 // Load saved widgets
 widgets.forEach(createWidget);
 
-// Add widget button
-document.getElementById('addWidgetBtn').addEventListener('click', ()=>{
+// Add new widget
+document.getElementById('addWidgetBtn').addEventListener('click',()=>{
   const title=prompt("Widget Title:"); if(!title) return;
   const content=prompt("Widget Content (optional):")||'';
   const id='widget_'+Date.now();
-  const wData={id, top:100, left:100, title, content};
-  widgets.push(wData);
-  localStorage.setItem('widgets',JSON.stringify(widgets));
+  const wData={id, top:100, left:100, title, content, width:220, height:120};
+  widgets.push(wData); localStorage.setItem('widgets',JSON.stringify(widgets));
   createWidget(wData);
 });
 
-// Accent color
+/* --------- ACCENT COLOR --------- */
 const accentPicker=document.getElementById('accentColorPicker');
 function updateAccentColor(color){
   document.documentElement.style.setProperty('--accent-color', color);
@@ -213,25 +227,19 @@ const savedAccent=localStorage.getItem('accentColor');
 if(savedAccent){ accentPicker.value=savedAccent; updateAccentColor(savedAccent); }
 accentPicker.addEventListener("input", e=>{ updateAccentColor(e.target.value); localStorage.setItem('accentColor', e.target.value); });
 
-// Background video/image
+/* --------- BACKGROUND IMAGE/VIDEO --------- */
 const bgInput=document.getElementById("backgroundMedia");
 const applyBgBtn=document.getElementById("applyBackground");
-applyBgBtn.addEventListener("click", ()=>{
+applyBgBtn.addEventListener("click",()=>{
   const url=bgInput.value.trim();
   if(!url){
-    // default dark theme
-    document.body.style.background="linear-gradient(135deg, #1e1e2f, #2e2e3f, #1e1e2f)";
-    document.body.style.backgroundSize="400% 400%";
-    document.body.style.animation="gradientAnim 20s ease infinite";
-    return;
+    document.body.style.background="#121212"; document.body.style.backgroundSize="cover"; return;
   }
   if(url.match(/\.(mp4|webm|ogg)$/i)){
     let video=document.getElementById("bgVideo");
     if(!video){
-      video=document.createElement("video");
-      video.id="bgVideo"; video.autoplay=true; video.loop=true; video.muted=true;
-      video.style.position="fixed"; video.style.top="0"; video.style.left="0";
-      video.style.width="100%"; video.style.height="100%"; video.style.objectFit="cover"; video.style.zIndex="-1";
+      video=document.createElement("video"); video.id="bgVideo"; video.autoplay=true; video.loop=true; video.muted=true;
+      video.style.position="fixed"; video.style.top="0"; video.style.left="0"; video.style.width="100%"; video.style.height="100%"; video.style.objectFit="cover"; video.style.zIndex="-1";
       document.body.appendChild(video);
     }
     video.src=url;
@@ -239,12 +247,13 @@ applyBgBtn.addEventListener("click", ()=>{
     document.body.style.background=`url(${url}) no-repeat center center fixed`;
     document.body.style.backgroundSize="cover";
   }
-  localStorage.setItem("backgroundMedia", url);
+  localStorage.setItem("backgroundMedia",url);
 });
 
 // Load saved background
 const savedBg=localStorage.getItem("backgroundMedia");
 if(savedBg){ bgInput.value=savedBg; applyBgBtn.click(); }
+
 </script>
 </body>
 </html>
