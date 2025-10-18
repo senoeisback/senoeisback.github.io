@@ -1,83 +1,263 @@
-<script>
-  // 🧠 USER HANDLING — always allows guests
-  let user = localStorage.getItem("loggedInUser");
-  if (!user) {
-    user = "Guest";
-    localStorage.setItem("loggedInUser", "Guest");
-  }
-
-  document.getElementById("welcome").textContent = `Welcome, ${user}!`;
-
-  // 🕒 LIVE TIME DISPLAY
-  function updateTime() {
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    });
-    document.getElementById("time").textContent = timeStr;
-  }
-  setInterval(updateTime, 1000);
-  updateTime();
-
-  // 📝 EXAMPLE ASSIGNMENTS
-  const assignments = [
-    { class: "Math", title: "Chapter 3 Homework", due: "2025-10-20", desc: "Page 42, #1–10" },
-    { class: "English", title: "Essay Draft", due: "2025-10-18", desc: "Shakespeare analysis" },
-    { class: "Science", title: "Lab Report", due: "2025-10-21", desc: "Newton’s Laws experiment" },
-  ];
-
-  const container = document.getElementById("assignments");
-  container.innerHTML = ""; // clear if already rendered
-  assignments.forEach(a => {
-    const card = document.createElement("div");
-    card.className = "bg-white dark:bg-gray-800 rounded-2xl shadow p-4 border dark:border-gray-700";
-    card.innerHTML = `
-      <h3 class="text-lg font-semibold">${a.title}</h3>
-      <p class="text-gray-600 dark:text-gray-300">${a.desc}</p>
-      <p class="text-sm text-gray-400 mt-2">Due: ${a.due}</p>
-    `;
-    container.appendChild(card);
-  });
-
-  // 🎨 THEME HANDLING
-  const themeToggle = document.getElementById("themeToggle");
-
-  // Set initial theme state
-  if (localStorage.getItem("theme") === "dark") {
-    document.documentElement.classList.add("dark");
-    if (themeToggle) themeToggle.checked = true;
-  }
-
-  // Toggle theme when switch changes
-  themeToggle?.addEventListener("change", (e) => {
-    if (e.target.checked) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard — StudySpace</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Dynamic Island styles (small custom CSS for animations & layout) */
+    .dyn-island {
+      width: 120px;
+      height: 38px;
+      border-radius: 9999px;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      transition: width 260ms cubic-bezier(.2,.9,.2,1), height 220ms, box-shadow 200ms;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 6px 12px;
     }
-  });
+    .dyn-island.expanded {
+      width: 360px;
+      height: 86px;
+      padding: 12px 16px;
+      box-shadow: 0 10px 30px rgba(2,6,23,0.25);
+    }
+    .dyn-island .time {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+    }
+    .dyn-island .detail {
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 200ms, transform 200ms;
+    }
+    .dyn-island.expanded .detail {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    /* small pulsing indicator */
+    .pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 9999px;
+      box-shadow: 0 0 0 0 rgba(99,102,241,0.6);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(99,102,241,0.45); }
+      70% { box-shadow: 0 0 0 8px rgba(99,102,241,0); }
+      100% { box-shadow: 0 0 0 0 rgba(99,102,241,0); }
+    }
+    /* center container to avoid overlapping header on small screens */
+    .island-wrap {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 14px;
+      z-index: 60;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
 
-  // ⚙️ SETTINGS MODAL
-  function openSettings() {
-    document.getElementById("settingsModal").classList.remove("hidden");
-  }
+  <!-- Dynamic Island (top-center) -->
+  <div class="island-wrap">
+    <div id="dynIsland" class="dyn-island bg-white/80 dark:bg-gray-800/70 border border-gray-200 dark:border-gray-700">
+      <!-- left area: small dot -->
+      <div id="dot" class="pulse bg-indigo-600 dark:bg-indigo-400"></div>
 
-  function closeSettings() {
-    document.getElementById("settingsModal").classList.add("hidden");
-  }
+      <!-- center: time -->
+      <div class="time text-gray-900 dark:text-gray-100 text-sm" id="islandTime">--:--:--</div>
 
-  // 🚪 LOGOUT — now just switches to Guest mode (no redirect)
-  function logout() {
-    localStorage.setItem("loggedInUser", "Guest");
-    document.getElementById("welcome").textContent = "Welcome, Guest!";
-  }
+      <!-- expanded details (hidden until expanded) -->
+      <div class="detail ml-3 text-left text-xs text-gray-700 dark:text-gray-300" id="islandDetails" style="display:none; width:100%;">
+        <div id="nextTitle" class="font-semibold truncate">No upcoming assignments</div>
+        <div id="nextDue" class="text-xs text-gray-500 dark:text-gray-400 mt-1">—</div>
+      </div>
+    </div>
+  </div>
 
-  // Expose modal and logout functions globally
-  window.openSettings = openSettings;
-  window.closeSettings = closeSettings;
-  window.logout = logout;
-</script>
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-gray-800 shadow-lg p-4 flex flex-col justify-between">
+      <div>
+        <h1 class="text-2xl font-bold mb-4 text-indigo-700 dark:text-indigo-300">StudySpace</h1>
+        <nav class="space-y-2">
+          <a href="dashboard.html" class="block p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700">🏠 Dashboard</a>
+          <a href="#" onclick="openSettings()" class="block p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700">⚙️ Settings</a>
+        </nav>
+      </div>
+      <button onclick="logout()" class="mt-4 w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg">Logout</button>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 p-6">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 id="welcome" class="text-3xl font-semibold">Welcome!</h2>
+          <p id="subtext" class="text-sm text-gray-500 dark:text-gray-400">Your assignments at a glance</p>
+        </div>
+        <!-- (We still show a separate main clock; island is primary) -->
+        <div class="text-right">
+          <p class="text-sm text-gray-400 hidden md:block">Local Time</p>
+          <div id="time" class="text-lg font-mono font-medium hidden md:block"></div>
+        </div>
+      </div>
+
+      <section id="assignments" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></section>
+    </main>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg w-80">
+      <h3 class="text-xl font-semibold mb-4">Settings</h3>
+      <div class="flex items-center justify-between mb-4">
+        <span>Dark Mode</span>
+        <label class="inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="themeToggle" class="sr-only peer">
+          <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:bg-indigo-600 relative">
+            <span class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-all peer-checked:translate-x-5"></span>
+          </div>
+        </label>
+      </div>
+      <button onclick="closeSettings()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-lg">Close</button>
+    </div>
+  </div>
+
+  <script>
+    // -----------------------
+    // Core: Guest user + welcome
+    // -----------------------
+    let user = localStorage.getItem("loggedInUser");
+    if (!user) {
+      user = "Guest";
+      localStorage.setItem("loggedInUser", "Guest");
+    }
+    document.getElementById("welcome").textContent = `Welcome, ${user}!`;
+
+    // -----------------------
+    // Assignments (sample data)
+    // Replace with loading from data/assignments.json later if desired
+    // -----------------------
+    const assignments = [
+      { class: "Math", title: "Chapter 3 Homework", due: "2025-10-20T23:59:00", desc: "Page 42, #1–10" },
+      { class: "English", title: "Essay Draft", due: "2025-10-18T17:00:00", desc: "Shakespeare analysis" },
+      { class: "Science", title: "Lab Report", due: "2025-10-21T12:00:00", desc: "Newton’s Laws experiment" },
+    ];
+    const container = document.getElementById("assignments");
+    container.innerHTML = "";
+    assignments.forEach(a => {
+      const card = document.createElement("div");
+      card.className = "bg-white dark:bg-gray-800 rounded-2xl shadow p-4 border dark:border-gray-700";
+      card.innerHTML = `
+        <h3 class="text-lg font-semibold">${a.title}</h3>
+        <p class="text-gray-600 dark:text-gray-300">${a.desc}</p>
+        <p class="text-sm text-gray-400 mt-2">Due: ${new Date(a.due).toLocaleString()}</p>
+      `;
+      container.appendChild(card);
+    });
+
+    // -----------------------
+    // Island: live time + expand details
+    // -----------------------
+    const island = document.getElementById('dynIsland');
+    const islandTime = document.getElementById('islandTime');
+    const islandDetails = document.getElementById('islandDetails');
+    const nextTitle = document.getElementById('nextTitle');
+    const nextDue = document.getElementById('nextDue');
+
+    function getNextAssignment() {
+      // pick earliest due date in future
+      const now = new Date();
+      const future = assignments
+        .map(a => ({...a, dueDate: new Date(a.due)}))
+        .filter(a => a.dueDate > now)
+        .sort((x,y) => x.dueDate - y.dueDate);
+      return future.length ? future[0] : null;
+    }
+
+    function updateIslandTime() {
+      const now = new Date();
+      islandTime.textContent = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+      // also update the larger page time
+      const pageTime = document.getElementById('time');
+      if (pageTime) pageTime.textContent = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    }
+    setInterval(updateIslandTime, 1000);
+    updateIslandTime();
+
+    function refreshIslandDetails() {
+      const next = getNextAssignment();
+      if (next) {
+        nextTitle.textContent = `${next.title} · ${next.class}`;
+        nextDue.textContent = `Due ${next.dueDate.toLocaleString()}`;
+      } else {
+        nextTitle.textContent = 'No upcoming assignments';
+        nextDue.textContent = '—';
+      }
+    }
+    refreshIslandDetails();
+
+    // Toggle expand/collapse on click
+    let expanded = false;
+    island.addEventListener('click', (e) => {
+      expanded = !expanded;
+      if (expanded) {
+        island.classList.add('expanded');
+        islandDetails.style.display = 'block';
+      } else {
+        island.classList.remove('expanded');
+        // allow animation to play before hiding
+        setTimeout(() => { islandDetails.style.display = 'none'; }, 220);
+      }
+    });
+
+    // Close expanded island if clicked outside (optional)
+    document.addEventListener('click', (e) => {
+      if (!island.contains(e.target) && expanded) {
+        expanded = false;
+        island.classList.remove('expanded');
+        setTimeout(() => { islandDetails.style.display = 'none'; }, 220);
+      }
+    }, true);
+
+    // -----------------------
+    // Theme handling (dark/light)
+    // -----------------------
+    const themeToggle = document.getElementById('themeToggle');
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.classList.add('dark');
+      if (themeToggle) themeToggle.checked = true;
+    }
+
+    themeToggle?.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      }
+    });
+
+    // -----------------------
+    // Settings modal + logout (stay as guest)
+    // -----------------------
+    function openSettings() { document.getElementById('settingsModal').classList.remove('hidden'); }
+    function closeSettings() { document.getElementById('settingsModal').classList.add('hidden'); }
+    function logout() {
+      localStorage.setItem('loggedInUser', 'Guest');
+      document.getElementById('welcome').textContent = 'Welcome, Guest!';
+    }
+    window.openSettings = openSettings;
+    window.closeSettings = closeSettings;
+    window.logout = logout;
+  </script>
+</body>
+</html>
