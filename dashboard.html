@@ -11,7 +11,7 @@
       width: 120px;
       height: 38px;
       border-radius: 9999px;
-      background-color: #000; /* Pure black */
+      background-color: #000;
       color: #fff;
       display: flex;
       align-items: center;
@@ -24,7 +24,6 @@
       overflow: hidden;
     }
 
-    /* Breathing glow */
     .dyn-island::before {
       content: '';
       position: absolute;
@@ -40,11 +39,10 @@
     }
 
     @keyframes breathe {
-      0%, 100% { transform: scale(1); opacity: 0.4; }
+      0%,100% { transform: scale(1); opacity: 0.4; }
       50% { transform: scale(1.05); opacity: 0.6; }
     }
 
-    /* Hover expand */
     .dyn-island:hover {
       width: 180px;
       height: 48px;
@@ -65,6 +63,42 @@
       top: 14px;
       z-index: 60;
     }
+
+    /* ---------------- Sidebar ---------------- */
+    .sidebar-wrapper {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 16px; /* hover strip width */
+      height: 100%;
+      z-index: 40;
+    }
+
+    .sidebar {
+      position: fixed;
+      right: -240px; /* hidden by default */
+      top: 0;
+      width: 240px;
+      height: 100%;
+      background-color: white;
+      color: black;
+      box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 1rem;
+      transition: right 0.3s ease;
+      z-index: 50;
+    }
+
+    .sidebar-wrapper:hover .sidebar {
+      right: 0;
+    }
+
+    .dark .sidebar {
+      background-color: #1f2937; /* Tailwind gray-800 */
+      color: #f9fafb; /* Tailwind gray-50 */
+    }
   </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -76,9 +110,9 @@
     </div>
   </div>
 
-  <!-- ---------------- Sidebar ---------------- -->
-  <div class="flex min-h-screen">
-    <aside class="w-64 bg-white dark:bg-gray-800 shadow-lg p-4 flex flex-col justify-between">
+  <!-- ---------------- Sidebar Hover Wrapper ---------------- -->
+  <div class="sidebar-wrapper">
+    <aside class="sidebar">
       <div>
         <h1 class="text-2xl font-bold mb-4 text-indigo-700 dark:text-indigo-300">StudySpace</h1>
         <nav class="space-y-2">
@@ -89,14 +123,14 @@
       </div>
       <button onclick="logout()" class="mt-4 w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg">Logout</button>
     </aside>
-
-    <!-- ---------------- Main ---------------- -->
-    <main class="flex-1 p-8 flex flex-col items-center justify-center text-center">
-      <h2 id="welcome" class="text-4xl font-semibold mb-2">Welcome!</h2>
-      <p class="text-gray-500 dark:text-gray-400 text-lg mb-6">Your all-in-one school workspace</p>
-      <div id="time" class="text-2xl font-mono font-medium"></div>
-    </main>
   </div>
+
+  <!-- ---------------- Main ---------------- -->
+  <main class="flex-1 p-8 flex flex-col items-center justify-center text-center">
+    <h2 id="welcome" class="text-4xl font-semibold mb-2">Welcome!</h2>
+    <p class="text-gray-500 dark:text-gray-400 text-lg mb-6">Your all-in-one school workspace</p>
+    <div id="time" class="text-2xl font-mono font-medium"></div>
+  </main>
 
   <!-- ---------------- Settings Modal ---------------- -->
   <div id="settingsModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
