@@ -1,338 +1,250 @@
 <!DOCTYPE html>
 <html lang="en" class="antialiased">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard — StudySpace Rice Setup</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    /* ---------------- Background ---------------- */
-    body {
-      margin: 0;
-      font-family: 'Fira Code', monospace;
-      overflow: hidden;
-      background: linear-gradient(135deg, #1e1e2f, #2e2e3f, #1e1e2f);
-      background-size: 400% 400%;
-      animation: gradientAnim 20s ease infinite;
-      --accent-color: #00ffff; /* default accent color */
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — StudySpace Rice Setup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body {
+  margin: 0;
+  font-family: 'Fira Code', monospace;
+  overflow: hidden;
+  --accent-color: #00ffff;
+  /* default dark gradient */
+  background: linear-gradient(135deg, #1e1e2f, #2e2e3f, #1e1e2f);
+  background-size: 400% 400%;
+  animation: gradientAnim 20s ease infinite;
+}
+@keyframes gradientAnim { 0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%} }
 
-    @keyframes gradientAnim {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
+.dyn-island {
+  width: 120px;
+  height: 38px;
+  border-radius: 9999px;
+  background-color: #000;
+  color: var(--accent-color);
+  display: flex; align-items: center; justify-content: center;
+  padding: 6px 12px;
+  transition: width 260ms cubic-bezier(.2,.9,.2,1), height 220ms, box-shadow 200ms;
+  cursor: grab; position: relative; overflow: hidden;
+  font-size: 0.9rem; font-weight:700; letter-spacing:0.6px;
+}
+.dyn-island::before {
+  content:'';
+  position:absolute; top:-50%; left:-50%; width:200%; height:200%;
+  background:radial-gradient(circle, rgba(0,255,255,0.3) 0%, rgba(0,255,255,0) 70%);
+  opacity:0.4; animation:breathe 4s ease-in-out infinite; border-radius:9999px; pointer-events:none;
+}
+@keyframes breathe {0%,100%{transform:scale(1);opacity:0.4}50%{transform:scale(1.05);opacity:0.6}}
+.dyn-island:hover {width:180px;height:48px;box-shadow:0 10px 30px var(--accent-color)80}
+.dyn-island .time {white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex-shrink:0; z-index:10;}
+.island-wrap {position:absolute; left:50%; top:14px; transform:translateX(-50%); z-index:60;}
+.island-wrap.dragging {cursor:grabbing;}
 
-    /* ---------------- Dynamic Island ---------------- */
-    .dyn-island {
-      width: 120px;
-      height: 38px;
-      border-radius: 9999px;
-      background-color: #000;
-      color: var(--accent-color);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 6px 12px;
-      transition: width 260ms cubic-bezier(.2,.9,.2,1), height 220ms, box-shadow 200ms;
-      cursor: grab;
-      position: relative;
-      overflow: hidden;
-      font-size: 0.9rem;
-      font-weight: 700;
-      letter-spacing: 0.6px;
-    }
+.sidebar-wrapper {position:fixed; top:0; right:0; width:16px; height:100%; z-index:40;}
+.sidebar {position:fixed; right:-240px; top:0; width:240px; height:100%;
+  background-color: rgba(0,0,0,0.7); color:var(--accent-color);
+  box-shadow:-2px 0 20px rgba(0,255,255,0.2); display:flex; flex-direction:column;
+  justify-content:space-between; padding:1rem; transition:right 0.3s ease, background-color 0.3s ease;
+  backdrop-filter: blur(10px); border-left:1px solid rgba(0,255,255,0.3); z-index:50;
+}
+.sidebar-wrapper:hover .sidebar { right:0; }
 
-    .dyn-island::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(0,255,255,0.3) 0%, rgba(0,255,255,0) 70%);
-      opacity: 0.4;
-      animation: breathe 4s ease-in-out infinite;
-      border-radius: 9999px;
-      pointer-events: none;
-    }
-
-    @keyframes breathe {
-      0%,100% { transform: scale(1); opacity: 0.4; }
-      50% { transform: scale(1.05); opacity: 0.6; }
-    }
-
-    .dyn-island:hover {
-      width: 180px;
-      height: 48px;
-      box-shadow: 0 10px 30px var(--accent-color)80;
-    }
-
-    .dyn-island .time {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      flex-shrink: 0;
-      z-index: 10;
-    }
-
-    .island-wrap {
-      position: absolute;
-      left: 50%;
-      top: 14px;
-      transform: translateX(-50%);
-      z-index: 60;
-    }
-
-    .island-wrap.dragging {
-      cursor: grabbing;
-    }
-
-    /* ---------------- Right Sidebar ---------------- */
-    .sidebar-wrapper {
-      position: fixed;
-      top: 0;
-      right: 0;
-      width: 16px;
-      height: 100%;
-      z-index: 40;
-    }
-
-    .sidebar {
-      position: fixed;
-      right: -240px;
-      top: 0;
-      width: 240px;
-      height: 100%;
-      background-color: rgba(0,0,0,0.7);
-      color: var(--accent-color);
-      box-shadow: -2px 0 20px rgba(0,255,255,0.2);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 1rem;
-      transition: right 0.3s ease, background-color 0.3s ease;
-      backdrop-filter: blur(10px);
-      border-left: 1px solid rgba(0,255,255,0.3);
-      z-index: 50;
-    }
-
-    .sidebar-wrapper:hover .sidebar {
-      right: 0;
-    }
-
-    /* ---------------- Widgets ---------------- */
-    .widget {
-      position: absolute;
-      width: 220px;
-      min-height: 120px;
-      background-color: rgba(0,0,0,0.6);
-      color: var(--accent-color);
-      backdrop-filter: blur(10px);
-      border-radius: 1rem;
-      padding: 1rem;
-      box-shadow: 0 10px 25px rgba(0,255,255,0.3);
-      cursor: grab;
-    }
-
-    .widget.dragging {
-      cursor: grabbing;
-    }
-  </style>
+.widget {position:absolute; width:220px; min-height:120px; background-color:rgba(0,0,0,0.6);
+  color:var(--accent-color); backdrop-filter:blur(10px); border-radius:1rem; padding:1rem;
+  box-shadow:0 10px 25px rgba(0,255,255,0.3); cursor:grab;
+}
+.widget.dragging {cursor:grabbing;}
+</style>
 </head>
 <body>
 
-  <!-- Dynamic Island -->
-  <div class="island-wrap" id="islandWrap">
-    <div id="dynIsland" class="dyn-island">
-      <div class="time" id="islandTime">--:--:--</div>
+<!-- Dynamic Island -->
+<div class="island-wrap" id="islandWrap">
+  <div id="dynIsland" class="dyn-island">
+    <div class="time" id="islandTime">--:--:--</div>
+  </div>
+</div>
+
+<!-- Right Sidebar -->
+<div class="sidebar-wrapper">
+  <aside class="sidebar">
+    <div>
+      <h1 class="text-2xl font-bold mb-4" style="color: var(--accent-color)">StudySpace</h1>
+      <nav class="space-y-2">
+        <a href="dashboard.html" class="block p-2 rounded hover:bg-black/30">🏠 Dashboard</a>
+        <a href="assignments.html" class="block p-2 rounded hover:bg-black/30">📝 Assignments</a>
+        <a href="#" onclick="openSettings()" class="block p-2 rounded hover:bg-black/30">⚙️ Settings</a>
+      </nav>
     </div>
-  </div>
+    <button onclick="logout()" class="mt-4 w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg">Logout</button>
+  </aside>
+</div>
 
-  <!-- Right Sidebar -->
-  <div class="sidebar-wrapper">
-    <aside class="sidebar">
-      <div>
-        <h1 class="text-2xl font-bold mb-4" style="color: var(--accent-color)">StudySpace</h1>
-        <nav class="space-y-2">
-          <a href="dashboard.html" class="block p-2 rounded hover:bg-black/30">🏠 Dashboard</a>
-          <a href="assignments.html" class="block p-2 rounded hover:bg-black/30">📝 Assignments</a>
-          <a href="#" onclick="openSettings()" class="block p-2 rounded hover:bg-black/30">⚙️ Settings</a>
-        </nav>
-      </div>
-      <button onclick="logout()" class="mt-4 w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg">Logout</button>
-    </aside>
-  </div>
-
-  <!-- Example Widget -->
-  <div class="widget" id="widget1" style="top:200px; left:50px;">
-    <h3 class="text-lg font-semibold mb-2">Example Widget</h3>
-    <p class="text-sm">You can add content here later.</p>
-  </div>
-
-  <!-- Empty Assignments Widget -->
-  <div class="widget" id="assignmentsWidget" style="top:200px; left:300px;">
-    <h3 class="text-lg font-semibold mb-2">Assignments</h3>
-    <ul class="text-sm" id="assignmentsList">
-      <!-- Empty by default -->
-    </ul>
-  </div>
-
-  <!-- Settings Modal -->
-  <div id="settingsModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-    <div class="bg-black/80 p-6 rounded-2xl shadow-lg w-80 text-white">
-      <h3 class="text-xl font-semibold mb-4" style="color: var(--accent-color)">Settings</h3>
-      
-      <!-- Dark Mode -->
-      <div class="flex items-center justify-between mb-4">
-        <span>Dark Mode</span>
-        <label class="inline-flex items-center cursor-pointer">
-          <input type="checkbox" id="themeToggle" class="sr-only peer">
-          <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer-checked:bg-cyan-400 relative">
-            <span class="absolute left-1 top-1 bg-black w-4 h-4 rounded-full transition-all peer-checked:translate-x-5"></span>
-          </div>
-        </label>
-      </div>
-
-      <!-- Accent Color Picker -->
-      <div class="mb-4">
-        <label class="block mb-1">Accent Color</label>
-        <input type="color" id="accentColorPicker" value="#00ffff" class="w-full h-8 cursor-pointer">
-      </div>
-
-      <!-- Background Video/Image -->
-      <div class="mb-4">
-        <label class="block mb-1">Background Media (URL)</label>
-        <input type="text" id="backgroundMedia" placeholder="Paste image/video URL" class="w-full p-1 rounded text-black">
-      </div>
-      <button id="applyBackground" class="bg-cyan-400 text-black px-4 py-2 rounded w-full mb-2">Apply</button>
-
-      <button onclick="closeSettings()" class="w-full bg-cyan-500 text-black py-2 rounded">Close</button>
+<!-- Settings Modal -->
+<div id="settingsModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+  <div class="bg-black/80 p-6 rounded-2xl shadow-lg w-80 text-white">
+    <h3 class="text-xl font-semibold mb-4" style="color: var(--accent-color)">Settings</h3>
+    <div class="flex items-center justify-between mb-4">
+      <span>Dark Mode</span>
+      <label class="inline-flex items-center cursor-pointer">
+        <input type="checkbox" id="themeToggle" class="sr-only peer">
+        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer-checked:bg-cyan-400 relative">
+          <span class="absolute left-1 top-1 bg-black w-4 h-4 rounded-full transition-all peer-checked:translate-x-5"></span>
+        </div>
+      </label>
     </div>
+
+    <!-- Accent Color Picker -->
+    <div class="mb-4">
+      <label class="block mb-1">Accent Color</label>
+      <input type="color" id="accentColorPicker" value="#00ffff" class="w-full h-8 cursor-pointer">
+    </div>
+
+    <!-- Background Media -->
+    <div class="mb-4">
+      <label class="block mb-1">Background Media (URL)</label>
+      <input type="text" id="backgroundMedia" placeholder="Paste image/video URL" class="w-full p-1 rounded text-black">
+    </div>
+    <button id="applyBackground" class="bg-cyan-400 text-black px-4 py-2 rounded w-full mb-2">Apply</button>
+
+    <button id="addWidgetBtn" class="w-full bg-cyan-400 text-black py-2 rounded mb-2">Add Widget</button>
+    <button onclick="closeSettings()" class="w-full bg-cyan-500 text-black py-2 rounded">Close</button>
   </div>
+</div>
 
-  <script>
-    // Guest mode
-    let user = localStorage.getItem("loggedInUser") || "Guest";
-    localStorage.setItem("loggedInUser", user);
+<script>
+let user = localStorage.getItem("loggedInUser") || "Guest";
+localStorage.setItem("loggedInUser", user);
 
-    // Live time
-    function updateTime() {
-      const now = new Date();
-      const timeStr = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-      document.getElementById("islandTime").textContent = timeStr;
+// Live time
+function updateTime() {
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  document.getElementById("islandTime").textContent = timeStr;
+}
+setInterval(updateTime,1000); updateTime();
+
+// Theme toggle
+const themeToggle = document.getElementById("themeToggle");
+if(localStorage.getItem('theme')==='dark'){ document.documentElement.classList.add('dark'); themeToggle.checked=true;}
+themeToggle?.addEventListener('change', e=>{
+  if(e.target.checked){ document.documentElement.classList.add('dark'); localStorage.setItem('theme','dark');}
+  else{ document.documentElement.classList.remove('dark'); localStorage.setItem('theme','light');}
+});
+
+// Settings modal + logout
+function openSettings(){ document.getElementById("settingsModal").classList.remove("hidden"); }
+function closeSettings(){ document.getElementById("settingsModal").classList.add("hidden"); }
+function logout(){ localStorage.setItem("loggedInUser","Guest"); alert("Logged out! Guest mode activated."); }
+window.openSettings=openSettings; window.closeSettings=closeSettings; window.logout=logout;
+
+// Dynamic Island drag
+const islandWrap = document.getElementById("islandWrap");
+let isDragging=false, offsetX=0, offsetY=0;
+islandWrap.addEventListener("mousedown", e=>{isDragging=true; offsetX=e.clientX-islandWrap.offsetLeft; offsetY=e.clientY-islandWrap.offsetTop; islandWrap.classList.add("dragging");});
+document.addEventListener("mouseup", ()=>{isDragging=false; islandWrap.classList.remove("dragging");});
+document.addEventListener("mousemove", e=>{
+  if(isDragging){
+    let x=e.clientX-offsetX, y=e.clientY-offsetY;
+    x=Math.max(0,Math.min(x,window.innerWidth-islandWrap.offsetWidth));
+    y=Math.max(0,Math.min(y,window.innerHeight-islandWrap.offsetHeight));
+    islandWrap.style.left=`${x}px`; islandWrap.style.top=`${y}px`; islandWrap.style.transform=`none`;
+  }
+});
+
+// Widgets system
+let widgets = JSON.parse(localStorage.getItem('widgets'))||[];
+
+// Create widget
+function createWidget({id, top, left, title, content}){
+  const w = document.createElement('div');
+  w.className='widget';
+  w.id=id;
+  w.style.top=top+'px';
+  w.style.left=left+'px';
+  w.innerHTML=`<h3 class="text-lg font-semibold mb-2">${title}</h3><p class="text-sm">${content}</p>`;
+  document.body.appendChild(w);
+  makeDraggable(id);
+}
+
+// Make draggable with save
+function makeDraggable(widgetId){
+  const w = document.getElementById(widgetId);
+  let dragging=false, wx=0, wy=0;
+  w.addEventListener("mousedown", e=>{ dragging=true; wx=e.clientX-w.offsetLeft; wy=e.clientY-w.offsetTop; w.classList.add("dragging");});
+  document.addEventListener("mouseup", ()=>{ dragging=false; w.classList.remove("dragging");});
+  document.addEventListener("mousemove", e=>{
+    if(dragging){
+      let x=e.clientX-wx, y=e.clientY-wy;
+      x=Math.max(0,Math.min(x,window.innerWidth-w.offsetWidth));
+      y=Math.max(0,Math.min(y,window.innerHeight-w.offsetHeight));
+      w.style.left=`${x}px`; w.style.top=`${y}px`;
+      const index = widgets.findIndex(wi=>wi.id===widgetId);
+      if(index!==-1){ widgets[index].top=y; widgets[index].left=x; localStorage.setItem('widgets',JSON.stringify(widgets)); }
     }
-    setInterval(updateTime,1000);
-    updateTime();
+  });
+}
 
-    // Theme toggle
-    const themeToggle = document.getElementById("themeToggle");
-    if(localStorage.getItem('theme')==='dark'){
-      document.documentElement.classList.add('dark');
-      themeToggle.checked=true;
+// Load saved widgets
+widgets.forEach(createWidget);
+
+// Add widget button
+document.getElementById('addWidgetBtn').addEventListener('click', ()=>{
+  const title=prompt("Widget Title:"); if(!title) return;
+  const content=prompt("Widget Content (optional):")||'';
+  const id='widget_'+Date.now();
+  const wData={id, top:100, left:100, title, content};
+  widgets.push(wData);
+  localStorage.setItem('widgets',JSON.stringify(widgets));
+  createWidget(wData);
+});
+
+// Accent color
+const accentPicker=document.getElementById('accentColorPicker');
+function updateAccentColor(color){
+  document.documentElement.style.setProperty('--accent-color', color);
+  document.querySelector('.dyn-island').style.boxShadow=`0 10px 30px ${color}80`;
+  document.querySelector('.sidebar').style.borderLeftColor=`${color}50`;
+  document.querySelector('.sidebar').style.color=color;
+}
+const savedAccent=localStorage.getItem('accentColor');
+if(savedAccent){ accentPicker.value=savedAccent; updateAccentColor(savedAccent); }
+accentPicker.addEventListener("input", e=>{ updateAccentColor(e.target.value); localStorage.setItem('accentColor', e.target.value); });
+
+// Background video/image
+const bgInput=document.getElementById("backgroundMedia");
+const applyBgBtn=document.getElementById("applyBackground");
+applyBgBtn.addEventListener("click", ()=>{
+  const url=bgInput.value.trim();
+  if(!url){
+    // default dark theme
+    document.body.style.background="linear-gradient(135deg, #1e1e2f, #2e2e3f, #1e1e2f)";
+    document.body.style.backgroundSize="400% 400%";
+    document.body.style.animation="gradientAnim 20s ease infinite";
+    return;
+  }
+  if(url.match(/\.(mp4|webm|ogg)$/i)){
+    let video=document.getElementById("bgVideo");
+    if(!video){
+      video=document.createElement("video");
+      video.id="bgVideo"; video.autoplay=true; video.loop=true; video.muted=true;
+      video.style.position="fixed"; video.style.top="0"; video.style.left="0";
+      video.style.width="100%"; video.style.height="100%"; video.style.objectFit="cover"; video.style.zIndex="-1";
+      document.body.appendChild(video);
     }
-    themeToggle?.addEventListener('change', e=>{
-      if(e.target.checked){
-        document.documentElement.classList.add('dark'); 
-        localStorage.setItem('theme','dark');
-      } else {
-        document.documentElement.classList.remove('dark'); 
-        localStorage.setItem('theme','light');
-      }
-    });
+    video.src=url;
+  } else {
+    document.body.style.background=`url(${url}) no-repeat center center fixed`;
+    document.body.style.backgroundSize="cover";
+  }
+  localStorage.setItem("backgroundMedia", url);
+});
 
-    // Settings modal + logout
-    function openSettings(){ document.getElementById("settingsModal").classList.remove("hidden"); }
-    function closeSettings(){ document.getElementById("settingsModal").classList.add("hidden"); }
-    function logout(){
-      localStorage.setItem("loggedInUser","Guest");
-      alert("Logged out! Guest mode activated.");
-    }
-    window.openSettings=openSettings; window.closeSettings=closeSettings; window.logout=logout;
-
-    // Dynamic Island Drag
-    const islandWrap = document.getElementById("islandWrap");
-    let isDragging=false, offsetX=0, offsetY=0;
-    islandWrap.addEventListener("mousedown",(e)=>{
-      isDragging=true;
-      offsetX=e.clientX - islandWrap.offsetLeft;
-      offsetY=e.clientY - islandWrap.offsetTop;
-      islandWrap.classList.add("dragging");
-    });
-    document.addEventListener("mouseup",()=>{isDragging=false; islandWrap.classList.remove("dragging");});
-    document.addEventListener("mousemove",(e)=>{
-      if(isDragging){
-        let x=e.clientX-offsetX;
-        let y=e.clientY-offsetY;
-        const maxX=window.innerWidth-islandWrap.offsetWidth;
-        const maxY=window.innerHeight-islandWrap.offsetHeight;
-        x=Math.max(0,Math.min(x,maxX));
-        y=Math.max(0,Math.min(y,maxY));
-        islandWrap.style.left=`${x}px`;
-        islandWrap.style.top=`${y}px`;
-        islandWrap.style.transform=`none`;
-      }
-    });
-
-    // Widget drag
-    function makeDraggable(widgetId){
-      const w = document.getElementById(widgetId);
-      let dragging=false, wx=0, wy=0;
-      w.addEventListener("mousedown",(e)=>{
-        dragging=true; wx=e.clientX - w.offsetLeft; wy=e.clientY - w.offsetTop;
-        w.classList.add("dragging");
-      });
-      document.addEventListener("mouseup",()=>{dragging=false; w.classList.remove("dragging");});
-      document.addEventListener("mousemove",(e)=>{
-        if(dragging){
-          let x=e.clientX-wx, y=e.clientY-wy;
-          const maxX=window.innerWidth-w.offsetWidth, maxY=window.innerHeight-w.offsetHeight;
-          x=Math.max(0,Math.min(x,maxX));
-          y=Math.max(0,Math.min(y,maxY));
-          w.style.left=`${x}px`; w.style.top=`${y}px`;
-        }
-      });
-    }
-    makeDraggable("widget1");
-    makeDraggable("assignmentsWidget");
-
-    // Accent color picker
-    const accentPicker = document.getElementById("accentColorPicker");
-    function updateAccentColor(color){
-      document.documentElement.style.setProperty('--accent-color', color);
-      document.querySelector('.dyn-island').style.boxShadow = `0 10px 30px ${color}80`;
-      document.querySelector('.sidebar').style.borderLeftColor = `${color}50`;
-      document.querySelector('.sidebar').style.color = color;
-    }
-    const savedAccent = localStorage.getItem("accentColor");
-    if(savedAccent){ accentPicker.value=savedAccent; updateAccentColor(savedAccent); }
-    accentPicker.addEventListener("input", e=>{ updateAccentColor(e.target.value); localStorage.setItem("accentColor", e.target.value); });
-
-    // Background video/image
-    const bgInput = document.getElementById("backgroundMedia");
-    const applyBgBtn = document.getElementById("applyBackground");
-    applyBgBtn.addEventListener("click", ()=>{
-      const url = bgInput.value.trim();
-      if(!url) return;
-      if(url.match(/\.(mp4|webm|ogg)$/i)){
-        let video = document.getElementById("bgVideo");
-        if(!video){
-          video = document.createElement("video");
-          video.id="bgVideo";
-          video.autoplay=true; video.loop=true; video.muted=true;
-          video.style.position="fixed"; video.style.top="0"; video.style.left="0";
-          video.style.width="100%"; video.style.height="100%"; video.style.objectFit="cover"; video.style.zIndex="-1";
-          document.body.appendChild(video);
-        }
-        video.src=url;
-      } else {
-        document.body.style.background=`url(${url}) no-repeat center center fixed`;
-        document.body.style.backgroundSize="cover";
-      }
-      localStorage.setItem("backgroundMedia", url);
-    });
-    const savedBg = localStorage.getItem("backgroundMedia");
-    if(savedBg){ bgInput.value=savedBg; applyBgBtn.click(); }
-  </script>
+// Load saved background
+const savedBg=localStorage.getItem("backgroundMedia");
+if(savedBg){ bgInput.value=savedBg; applyBgBtn.click(); }
+</script>
 </body>
 </html>
