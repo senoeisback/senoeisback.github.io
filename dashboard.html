@@ -18,7 +18,7 @@
       justify-content: center;
       padding: 6px 12px;
       transition: width 260ms cubic-bezier(.2,.9,.2,1), height 220ms, box-shadow 200ms;
-      cursor: default;
+      cursor: grab;
       position: relative;
       overflow: hidden;
     }
@@ -52,19 +52,23 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
       font-weight: 700;
       letter-spacing: 0.6px;
-      white-space: nowrap; /* prevents line break */
+      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      flex-shrink: 0; /* prevents shrinking */
+      flex-shrink: 0;
       z-index: 10;
     }
 
     .island-wrap {
-      position: fixed;
+      position: absolute;
       left: 50%;
-      transform: translateX(-50%);
       top: 14px;
+      transform: translateX(-50%);
       z-index: 60;
+    }
+
+    .island-wrap.dragging {
+      cursor: grabbing;
     }
 
     /* ---------------- Right Sidebar ---------------- */
@@ -79,25 +83,25 @@
 
     .sidebar {
       position: fixed;
-      right: -240px; /* hidden by default */
+      right: -240px;
       top: 0;
       width: 240px;
       height: 100%;
-      background-color: rgba(255,255,255,0.85); /* translucent */
+      background-color: rgba(255,255,255,0.85);
       color: black;
-      box-shadow: -2px 0 20px rgba(0,0,0,0.2); /* smooth shadow */
+      box-shadow: -2px 0 20px rgba(0,0,0,0.2);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       padding: 1rem;
       transition: right 0.3s ease, background-color 0.3s ease;
-      backdrop-filter: blur(10px); /* macOS blur */
+      backdrop-filter: blur(10px);
       border-left: 1px solid rgba(0,0,0,0.1);
       z-index: 50;
     }
 
     .dark .sidebar {
-      background-color: rgba(31,41,55,0.85); /* dark translucent */
+      background-color: rgba(31,41,55,0.85);
       color: #f9fafb;
       border-left: 1px solid rgba(255,255,255,0.1);
     }
@@ -110,7 +114,7 @@
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
 
   <!-- ---------------- Dynamic Island ---------------- -->
-  <div class="island-wrap">
+  <div class="island-wrap" id="islandWrap">
     <div id="dynIsland" class="dyn-island">
       <div class="time" id="islandTime">--:--:--</div>
     </div>
@@ -157,12 +161,12 @@
 
   <!-- ---------------- Script ---------------- -->
   <script>
-    // Guest mode
+    // ---------------- Guest Mode ----------------
     let user = localStorage.getItem("loggedInUser") || "Guest";
     localStorage.setItem("loggedInUser", user);
     document.getElementById("welcome").textContent = `Welcome, ${user}!`;
 
-    // Live time
+    // ---------------- Live Time ----------------
     function updateTime() {
       const now = new Date();
       const timeStr = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
@@ -172,7 +176,7 @@
     setInterval(updateTime, 1000);
     updateTime();
 
-    // Theme toggle
+    // ---------------- Theme Toggle ----------------
     const themeToggle = document.getElementById("themeToggle");
     if(localStorage.getItem('theme')==='dark'){
       document.documentElement.classList.add('dark'); 
@@ -188,7 +192,7 @@
       }
     });
 
-    // Settings modal + logout
+    // ---------------- Settings Modal + Logout ----------------
     function openSettings(){ document.getElementById("settingsModal").classList.remove("hidden"); }
     function closeSettings(){ document.getElementById("settingsModal").classList.add("hidden"); }
     function logout(){
@@ -196,6 +200,41 @@
       document.getElementById("welcome").textContent="Welcome, Guest!";
     }
     window.openSettings=openSettings; window.closeSettings=closeSettings; window.logout=logout;
+
+    // ---------------- Dynamic Island Drag ----------------
+    const islandWrap = document.getElementById("islandWrap");
+    let isDragging = false;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    islandWrap.addEventListener("mousedown", (e) => {
+      isDragging = true;
+      offsetX = e.clientX - islandWrap.offsetLeft;
+      offsetY = e.clientY - islandWrap.offsetTop;
+      islandWrap.classList.add("dragging");
+    });
+
+    document.addEventListener("mouseup", () => {
+      isDragging = false;
+      islandWrap.classList.remove("dragging");
+    });
+
+    document.addEventListener("mousemove", (e) => {
+      if (isDragging) {
+        let x = e.clientX - offsetX;
+        let y = e.clientY - offsetY;
+
+        // Constrain within viewport
+        const maxX = window.innerWidth - islandWrap.offsetWidth;
+        const maxY = window.innerHeight - islandWrap.offsetHeight;
+        x = Math.max(0, Math.min(x, maxX));
+        y = Math.max(0, Math.min(y, maxY));
+
+        islandWrap.style.left = `${x}px`;
+        islandWrap.style.top = `${y}px`;
+        islandWrap.style.transform = `none`;
+      }
+    });
   </script>
 </body>
 </html>
