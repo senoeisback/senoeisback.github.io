@@ -44,10 +44,6 @@ backdrop-filter:blur(10px);border-left:1px solid rgba(0,255,255,0.3);z-index:50;
   box-shadow:0 10px 25px rgba(0,255,255,0.3);cursor:grab;overflow:hidden;
 }
 .widget.dragging{cursor:grabbing;}
-.resizer{
-  width:12px;height:12px;background:var(--accent-color);position:absolute;
-  bottom:4px;right:4px;cursor:se-resize;border-radius:2px;
-}
 </style>
 </head>
 <body>
@@ -139,6 +135,7 @@ document.addEventListener("mouseup",()=>{ isDragging=false; islandWrap.classList
 document.addEventListener("mousemove",e=>{
   if(isDragging){
     let x=e.clientX-offsetX,y=e.clientY-offsetY;
+    x=Math.round(x/20)*20; y=Math.round(y/20)*20; // GRID SNAP
     x=Math.max(0,Math.min(x,window.innerWidth-islandWrap.offsetWidth));
     y=Math.max(0,Math.min(y,window.innerHeight-islandWrap.offsetHeight));
     islandWrap.style.left=`${x}px`; islandWrap.style.top=`${y}px`; islandWrap.style.transform=`none`;
@@ -146,17 +143,16 @@ document.addEventListener("mousemove",e=>{
 });
 
 /* WIDGETS (Predefined only) */
-let widgets = [
-  { id: 'assignmentsWidget', top: 100, left: 100, title: 'Assignments', content: '', width: 220, height: 120 },
-  { id: 'exampleWidget', top: 250, left: 100, title: 'Example Widget', content: '', width: 220, height: 120 }
+const GRID_SIZE=20;
+let widgets=JSON.parse(localStorage.getItem('widgets')) || [
+  { id: 'assignmentsWidget', top: 100, left: 100, title: 'Assignments', content: '', width: 220, height: 120 }
 ];
-localStorage.setItem('widgets', JSON.stringify(widgets));
 
 function createWidget({id, top, left, title, content, width=220, height=120}){
   const w=document.createElement('div'); w.className='widget'; w.id=id;
   w.style.top=top+'px'; w.style.left=left+'px'; w.style.width=width+'px'; w.style.height=height+'px';
-  w.innerHTML=`<h3 class="text-lg font-semibold mb-2">${title}</h3><p class="text-sm">${content}</p><div class="resizer"></div>`;
-  document.body.appendChild(w); makeDraggable(id); makeResizable(id);
+  w.innerHTML=`<h3 class="text-lg font-semibold mb-2">${title}</h3><p class="text-sm">${content}</p>`;
+  document.body.appendChild(w); makeDraggable(id);
 }
 
 // Draggable
@@ -167,9 +163,10 @@ function makeDraggable(widgetId){
   document.addEventListener("mouseup", ()=>{ dragging=false; w.classList.remove("dragging"); });
   document.addEventListener("mousemove", e=>{
     if(dragging){
-      let x=e.clientX-wx,y=e.clientY-wy;
-      x=Math.max(0,Math.min(x,window.innerWidth-w.offsetWidth));
-      y=Math.max(0,Math.min(y,window.innerHeight-w.offsetHeight));
+      let x=e.clientX-wx, y=e.clientY-wy;
+      x=Math.round(x/GRID_SIZE)*GRID_SIZE; y=Math.round(y/GRID_SIZE)*GRID_SIZE;
+      x=Math.max(0, Math.min(x, window.innerWidth-w.offsetWidth));
+      y=Math.max(0, Math.min(y, window.innerHeight-w.offsetHeight));
       w.style.left=`${x}px`; w.style.top=`${y}px`;
       const index=widgets.findIndex(widget=>widget.id===widgetId);
       if(index!==-1){ widgets[index].top=y; widgets[index].left=x; localStorage.setItem('widgets',JSON.stringify(widgets)); }
@@ -177,28 +174,7 @@ function makeDraggable(widgetId){
   });
 }
 
-// Resizable
-function makeResizable(widgetId){
-  const w=document.getElementById(widgetId);
-  const resizer=w.querySelector('.resizer');
-  let resizing=false,startX=0,startY=0,startWidth=0,startHeight=0;
-  resizer.addEventListener('mousedown',e=>{
-    e.stopPropagation();
-    resizing=true; startX=e.clientX; startY=e.clientY; startWidth=w.offsetWidth; startHeight=w.offsetHeight;
-    w.classList.add('dragging');
-  });
-  document.addEventListener('mouseup',()=>{ resizing=false; w.classList.remove('dragging'); });
-  document.addEventListener('mousemove',e=>{
-    if(resizing){
-      let newWidth=startWidth+(e.clientX-startX), newHeight=startHeight+(e.clientY-startY);
-      w.style.width=newWidth+'px'; w.style.height=newHeight+'px';
-      const index=widgets.findIndex(widget=>widget.id===widgetId);
-      if(index!==-1){ widgets[index].width=newWidth; widgets[index].height=newHeight; localStorage.setItem('widgets',JSON.stringify(widgets)); }
-    }
-  });
-}
-
-// Load predefined widgets
+// Load widgets
 widgets.forEach(createWidget);
 
 /* ACCENT COLOR */
@@ -214,9 +190,9 @@ if(savedAccent){ accentPicker.value=savedAccent; updateAccentColor(savedAccent);
 accentPicker.addEventListener("input", e=>{ updateAccentColor(e.target.value); localStorage.setItem('accentColor',e.target.value); });
 
 /* TEXT COLOR */
-const textColorPicker = document.getElementById('textColorPicker');
+const textColorPicker=document.getElementById('textColorPicker');
 function updateTextColor(color){
-  document.documentElement.style.setProperty('--text-color',color);
+  document.documentElement.style.setProperty('--text-color', color);
   document.querySelectorAll('.widget').forEach(w=>{ w.style.color=color; });
 }
 const savedTextColor=localStorage.getItem('textColor');
@@ -240,7 +216,6 @@ applyBgBtn.addEventListener("click",()=>{
 });
 const savedBg=localStorage.getItem("backgroundMedia");
 if(savedBg){ bgInput.value=savedBg; applyBgBtn.click(); }
-
 </script>
 </body>
 </html>
