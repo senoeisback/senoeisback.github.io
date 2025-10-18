@@ -6,17 +6,12 @@
 <title>Dashboard — StudySpace Rice Setup</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-/* --------- BODY DARK THEME --------- */
 body {
-  margin:0;
-  font-family:'Fira Code', monospace;
-  overflow:hidden;
-  background-color:#121212;
-  color:white;
-  --accent-color:#00ffff;
+  margin:0; font-family:'Fira Code', monospace; overflow:hidden;
+  background-color:#121212; color:white; --accent-color:#00ffff; --text-color:#ffffff;
 }
 
-/* --------- DYNAMIC ISLAND --------- */
+/* Dynamic Island */
 .dyn-island{
   width:120px;height:38px;border-radius:9999px;background-color:#000;color:var(--accent-color);
   display:flex;align-items:center;justify-content:center;padding:6px 12px;
@@ -34,7 +29,7 @@ body {
 .island-wrap{position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:60;}
 .island-wrap.dragging{cursor:grabbing;}
 
-/* --------- SIDEBAR --------- */
+/* Sidebar */
 .sidebar-wrapper{position:fixed;top:0;right:0;width:16px;height:100%;z-index:40;}
 .sidebar{position:fixed;right:-240px;top:0;width:240px;height:100%;background-color: rgba(0,0,0,0.7);
 color:var(--accent-color);box-shadow:-2px 0 20px rgba(0,255,255,0.2);display:flex;flex-direction:column;
@@ -42,10 +37,10 @@ justify-content:space-between;padding:1rem;transition:right 0.3s ease, backgroun
 backdrop-filter:blur(10px);border-left:1px solid rgba(0,255,255,0.3);z-index:50;}
 .sidebar-wrapper:hover .sidebar{right:0;}
 
-/* --------- WIDGETS --------- */
+/* Widgets */
 .widget{
   position:absolute;width:220px;min-height:120px;background-color:rgba(0,0,0,0.6);
-  color:var(--accent-color);backdrop-filter:blur(10px);border-radius:1rem;padding:1rem;
+  color:var(--text-color);backdrop-filter:blur(10px);border-radius:1rem;padding:1rem;
   box-shadow:0 10px 25px rgba(0,255,255,0.3);cursor:grab;overflow:hidden;
 }
 .widget.dragging{cursor:grabbing;}
@@ -83,6 +78,8 @@ backdrop-filter:blur(10px);border-left:1px solid rgba(0,255,255,0.3);z-index:50;
 <div id="settingsModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
   <div class="bg-black/80 p-6 rounded-2xl shadow-lg w-80 text-white">
     <h3 class="text-xl font-semibold mb-4" style="color: var(--accent-color)">Settings</h3>
+
+    <!-- Theme toggle -->
     <div class="flex items-center justify-between mb-4">
       <span>Dark Mode</span>
       <label class="inline-flex items-center cursor-pointer">
@@ -99,43 +96,42 @@ backdrop-filter:blur(10px);border-left:1px solid rgba(0,255,255,0.3);z-index:50;
       <input type="color" id="accentColorPicker" value="#00ffff" class="w-full h-8 cursor-pointer">
     </div>
 
+    <!-- Text Color Picker -->
+    <div class="mb-4">
+      <label class="block mb-1">Text Color</label>
+      <input type="color" id="textColorPicker" value="#ffffff" class="w-full h-8 cursor-pointer">
+    </div>
+
     <!-- Background Media -->
     <div class="mb-4">
       <label class="block mb-1">Background Media (URL)</label>
       <input type="text" id="backgroundMedia" placeholder="Paste image/video URL" class="w-full p-1 rounded text-black">
     </div>
     <button id="applyBackground" class="bg-cyan-400 text-black px-4 py-2 rounded w-full mb-2">Apply</button>
-
-    <button id="addWidgetBtn" class="w-full bg-cyan-400 text-black py-2 rounded mb-2">Add Widget</button>
     <button onclick="closeSettings()" class="w-full bg-cyan-500 text-black py-2 rounded">Close</button>
   </div>
 </div>
 
 <script>
-/* --------- USER & TIME --------- */
+/* USER & TIME */
 let user=localStorage.getItem("loggedInUser")||"Guest";
 localStorage.setItem("loggedInUser",user);
-
-function updateTime(){
-  const now=new Date();
-  document.getElementById("islandTime").textContent=now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-}
+function updateTime(){ const now=new Date(); document.getElementById("islandTime").textContent=now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
 setInterval(updateTime,1000); updateTime();
 
-/* --------- THEME & SETTINGS --------- */
+/* THEME & SETTINGS */
 const themeToggle=document.getElementById("themeToggle");
 if(localStorage.getItem('theme')==='dark'){ document.documentElement.classList.add('dark'); themeToggle.checked=true; }
 themeToggle?.addEventListener('change',e=>{
   if(e.target.checked){ document.documentElement.classList.add('dark'); localStorage.setItem('theme','dark'); }
   else{ document.documentElement.classList.remove('dark'); localStorage.setItem('theme','light'); }
 });
-
 function openSettings(){ document.getElementById("settingsModal").classList.remove("hidden"); }
 function closeSettings(){ document.getElementById("settingsModal").classList.add("hidden"); }
 function logout(){ localStorage.setItem("loggedInUser","Guest"); alert("Logged out! Guest mode activated."); }
 window.openSettings=openSettings; window.closeSettings=closeSettings; window.logout=logout;
 
-/* --------- DYNAMIC ISLAND DRAG --------- */
+/* DYNAMIC ISLAND DRAG */
 const islandWrap=document.getElementById("islandWrap");
 let isDragging=false,offsetX=0,offsetY=0;
 islandWrap.addEventListener("mousedown",e=>{ isDragging=true; offsetX=e.clientX-islandWrap.offsetLeft; offsetY=e.clientY-islandWrap.offsetTop; islandWrap.classList.add("dragging"); });
@@ -149,18 +145,18 @@ document.addEventListener("mousemove",e=>{
   }
 });
 
-/* --------- WIDGET SYSTEM --------- */
-let widgets = JSON.parse(localStorage.getItem('widgets'))||[];
+/* WIDGETS (Predefined only) */
+let widgets = [
+  { id: 'assignmentsWidget', top: 100, left: 100, title: 'Assignments', content: '', width: 220, height: 120 },
+  { id: 'exampleWidget', top: 250, left: 100, title: 'Example Widget', content: '', width: 220, height: 120 }
+];
+localStorage.setItem('widgets', JSON.stringify(widgets));
 
-// Create widget with size
 function createWidget({id, top, left, title, content, width=220, height=120}){
-  const w=document.createElement('div');
-  w.className='widget'; w.id=id;
-  w.style.top=top+'px'; w.style.left=left+'px';
-  w.style.width=width+'px'; w.style.height=height+'px';
+  const w=document.createElement('div'); w.className='widget'; w.id=id;
+  w.style.top=top+'px'; w.style.left=left+'px'; w.style.width=width+'px'; w.style.height=height+'px';
   w.innerHTML=`<h3 class="text-lg font-semibold mb-2">${title}</h3><p class="text-sm">${content}</p><div class="resizer"></div>`;
-  document.body.appendChild(w);
-  makeDraggable(id); makeResizable(id);
+  document.body.appendChild(w); makeDraggable(id); makeResizable(id);
 }
 
 // Draggable
@@ -202,20 +198,10 @@ function makeResizable(widgetId){
   });
 }
 
-// Load saved widgets
+// Load predefined widgets
 widgets.forEach(createWidget);
 
-// Add new widget
-document.getElementById('addWidgetBtn').addEventListener('click',()=>{
-  const title=prompt("Widget Title:"); if(!title) return;
-  const content=prompt("Widget Content (optional):")||'';
-  const id='widget_'+Date.now();
-  const wData={id, top:100, left:100, title, content, width:220, height:120};
-  widgets.push(wData); localStorage.setItem('widgets',JSON.stringify(widgets));
-  createWidget(wData);
-});
-
-/* --------- ACCENT COLOR --------- */
+/* ACCENT COLOR */
 const accentPicker=document.getElementById('accentColorPicker');
 function updateAccentColor(color){
   document.documentElement.style.setProperty('--accent-color', color);
@@ -225,32 +211,33 @@ function updateAccentColor(color){
 }
 const savedAccent=localStorage.getItem('accentColor');
 if(savedAccent){ accentPicker.value=savedAccent; updateAccentColor(savedAccent); }
-accentPicker.addEventListener("input", e=>{ updateAccentColor(e.target.value); localStorage.setItem('accentColor', e.target.value); });
+accentPicker.addEventListener("input", e=>{ updateAccentColor(e.target.value); localStorage.setItem('accentColor',e.target.value); });
 
-/* --------- BACKGROUND IMAGE/VIDEO --------- */
+/* TEXT COLOR */
+const textColorPicker = document.getElementById('textColorPicker');
+function updateTextColor(color){
+  document.documentElement.style.setProperty('--text-color',color);
+  document.querySelectorAll('.widget').forEach(w=>{ w.style.color=color; });
+}
+const savedTextColor=localStorage.getItem('textColor');
+if(savedTextColor){ textColorPicker.value=savedTextColor; updateTextColor(savedTextColor); }
+textColorPicker.addEventListener('input',e=>{ updateTextColor(e.target.value); localStorage.setItem('textColor',e.target.value); });
+
+/* BACKGROUND IMAGE/VIDEO */
 const bgInput=document.getElementById("backgroundMedia");
 const applyBgBtn=document.getElementById("applyBackground");
 applyBgBtn.addEventListener("click",()=>{
   const url=bgInput.value.trim();
-  if(!url){
-    document.body.style.background="#121212"; document.body.style.backgroundSize="cover"; return;
-  }
+  if(!url){ document.body.style.background="#121212"; document.body.style.backgroundSize="cover"; return; }
   if(url.match(/\.(mp4|webm|ogg)$/i)){
     let video=document.getElementById("bgVideo");
-    if(!video){
-      video=document.createElement("video"); video.id="bgVideo"; video.autoplay=true; video.loop=true; video.muted=true;
-      video.style.position="fixed"; video.style.top="0"; video.style.left="0"; video.style.width="100%"; video.style.height="100%"; video.style.objectFit="cover"; video.style.zIndex="-1";
-      document.body.appendChild(video);
-    }
+    if(!video){ video=document.createElement("video"); video.id="bgVideo"; video.autoplay=true; video.loop=true; video.muted=true;
+      video.style.position="fixed"; video.style.top="0"; video.style.left="0"; video.style.width="100%"; video.style.height="100%";
+      video.style.objectFit="cover"; video.style.zIndex="-1"; document.body.appendChild(video); }
     video.src=url;
-  } else {
-    document.body.style.background=`url(${url}) no-repeat center center fixed`;
-    document.body.style.backgroundSize="cover";
-  }
+  } else { document.body.style.background=`url(${url}) no-repeat center center fixed`; document.body.style.backgroundSize="cover"; }
   localStorage.setItem("backgroundMedia",url);
 });
-
-// Load saved background
 const savedBg=localStorage.getItem("backgroundMedia");
 if(savedBg){ bgInput.value=savedBg; applyBgBtn.click(); }
 
