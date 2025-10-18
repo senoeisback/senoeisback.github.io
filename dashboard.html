@@ -3,16 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard — StudySpace</title>
+  <title>Dashboard — StudySpace Rice Setup</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    /* ---------------- Background ---------------- */
+    body {
+      margin: 0;
+      font-family: 'Fira Code', monospace;
+      overflow: hidden;
+      background: linear-gradient(135deg, #1e1e2f, #2e2e3f, #1e1e2f);
+      background-size: 400% 400%;
+      animation: gradientAnim 20s ease infinite;
+      --accent-color: #00ffff; /* default accent color */
+    }
+
+    @keyframes gradientAnim {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
     /* ---------------- Dynamic Island ---------------- */
     .dyn-island {
       width: 120px;
       height: 38px;
       border-radius: 9999px;
       background-color: #000;
-      color: #fff;
+      color: var(--accent-color);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -21,6 +38,9 @@
       cursor: grab;
       position: relative;
       overflow: hidden;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.6px;
     }
 
     .dyn-island::before {
@@ -30,7 +50,7 @@
       left: -50%;
       width: 200%;
       height: 200%;
-      background: radial-gradient(circle, rgba(79,70,229,0.3) 0%, rgba(79,70,229,0) 70%);
+      background: radial-gradient(circle, rgba(0,255,255,0.3) 0%, rgba(0,255,255,0) 70%);
       opacity: 0.4;
       animation: breathe 4s ease-in-out infinite;
       border-radius: 9999px;
@@ -45,13 +65,10 @@
     .dyn-island:hover {
       width: 180px;
       height: 48px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+      box-shadow: 0 10px 30px var(--accent-color)80;
     }
 
     .dyn-island .time {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
-      font-weight: 700;
-      letter-spacing: 0.6px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -76,7 +93,7 @@
       position: fixed;
       top: 0;
       right: 0;
-      width: 16px; /* hover strip width */
+      width: 16px;
       height: 100%;
       z-index: 40;
     }
@@ -87,99 +104,131 @@
       top: 0;
       width: 240px;
       height: 100%;
-      background-color: rgba(255,255,255,0.85);
-      color: black;
-      box-shadow: -2px 0 20px rgba(0,0,0,0.2);
+      background-color: rgba(0,0,0,0.7);
+      color: var(--accent-color);
+      box-shadow: -2px 0 20px rgba(0,255,255,0.2);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       padding: 1rem;
       transition: right 0.3s ease, background-color 0.3s ease;
       backdrop-filter: blur(10px);
-      border-left: 1px solid rgba(0,0,0,0.1);
+      border-left: 1px solid rgba(0,255,255,0.3);
       z-index: 50;
-    }
-
-    .dark .sidebar {
-      background-color: rgba(31,41,55,0.85);
-      color: #f9fafb;
-      border-left: 1px solid rgba(255,255,255,0.1);
     }
 
     .sidebar-wrapper:hover .sidebar {
       right: 0;
     }
+
+    /* ---------------- Widgets ---------------- */
+    .widget {
+      position: absolute;
+      width: 220px;
+      min-height: 120px;
+      background-color: rgba(0,0,0,0.6);
+      color: var(--accent-color);
+      backdrop-filter: blur(10px);
+      border-radius: 1rem;
+      padding: 1rem;
+      box-shadow: 0 10px 25px rgba(0,255,255,0.3);
+      cursor: grab;
+    }
+
+    .widget.dragging {
+      cursor: grabbing;
+    }
   </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+<body>
 
-  <!-- ---------------- Dynamic Island ---------------- -->
+  <!-- Dynamic Island -->
   <div class="island-wrap" id="islandWrap">
     <div id="dynIsland" class="dyn-island">
       <div class="time" id="islandTime">--:--:--</div>
     </div>
   </div>
 
-  <!-- ---------------- Sidebar Hover Wrapper ---------------- -->
+  <!-- Right Sidebar -->
   <div class="sidebar-wrapper">
     <aside class="sidebar">
       <div>
-        <h1 class="text-2xl font-bold mb-4 text-indigo-700 dark:text-indigo-300">StudySpace</h1>
+        <h1 class="text-2xl font-bold mb-4" style="color: var(--accent-color)">StudySpace</h1>
         <nav class="space-y-2">
-          <a href="dashboard.html" class="block p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700">🏠 Dashboard</a>
-          <a href="assignments.html" class="block p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700">📝 Assignments</a>
-          <a href="#" onclick="openSettings()" class="block p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700">⚙️ Settings</a>
+          <a href="dashboard.html" class="block p-2 rounded hover:bg-black/30">🏠 Dashboard</a>
+          <a href="assignments.html" class="block p-2 rounded hover:bg-black/30">📝 Assignments</a>
+          <a href="#" onclick="openSettings()" class="block p-2 rounded hover:bg-black/30">⚙️ Settings</a>
         </nav>
       </div>
       <button onclick="logout()" class="mt-4 w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg">Logout</button>
     </aside>
   </div>
 
-  <!-- ---------------- Main ---------------- -->
-  <main class="flex-1 p-8 flex flex-col items-center justify-center text-center">
-    <h2 id="welcome" class="text-4xl font-semibold mb-2">Welcome!</h2>
-    <p class="text-gray-500 dark:text-gray-400 text-lg mb-6">Your all-in-one school workspace</p>
-    <div id="time" class="text-2xl font-mono font-medium"></div>
-  </main>
+  <!-- Example Widget -->
+  <div class="widget" id="widget1" style="top:200px; left:50px;">
+    <h3 class="text-lg font-semibold mb-2">Example Widget</h3>
+    <p class="text-sm">You can add content here later.</p>
+  </div>
 
-  <!-- ---------------- Settings Modal ---------------- -->
-  <div id="settingsModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg w-80">
-      <h3 class="text-xl font-semibold mb-4">Settings</h3>
+  <!-- Empty Assignments Widget -->
+  <div class="widget" id="assignmentsWidget" style="top:200px; left:300px;">
+    <h3 class="text-lg font-semibold mb-2">Assignments</h3>
+    <ul class="text-sm" id="assignmentsList">
+      <!-- Empty by default -->
+    </ul>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+    <div class="bg-black/80 p-6 rounded-2xl shadow-lg w-80 text-white">
+      <h3 class="text-xl font-semibold mb-4" style="color: var(--accent-color)">Settings</h3>
+      
+      <!-- Dark Mode -->
       <div class="flex items-center justify-between mb-4">
         <span>Dark Mode</span>
         <label class="inline-flex items-center cursor-pointer">
           <input type="checkbox" id="themeToggle" class="sr-only peer">
-          <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:bg-indigo-600 relative">
-            <span class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-all peer-checked:translate-x-5"></span>
+          <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer-checked:bg-cyan-400 relative">
+            <span class="absolute left-1 top-1 bg-black w-4 h-4 rounded-full transition-all peer-checked:translate-x-5"></span>
           </div>
         </label>
       </div>
-      <button onclick="closeSettings()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-lg">Close</button>
+
+      <!-- Accent Color Picker -->
+      <div class="mb-4">
+        <label class="block mb-1">Accent Color</label>
+        <input type="color" id="accentColorPicker" value="#00ffff" class="w-full h-8 cursor-pointer">
+      </div>
+
+      <!-- Background Video/Image -->
+      <div class="mb-4">
+        <label class="block mb-1">Background Media (URL)</label>
+        <input type="text" id="backgroundMedia" placeholder="Paste image/video URL" class="w-full p-1 rounded text-black">
+      </div>
+      <button id="applyBackground" class="bg-cyan-400 text-black px-4 py-2 rounded w-full mb-2">Apply</button>
+
+      <button onclick="closeSettings()" class="w-full bg-cyan-500 text-black py-2 rounded">Close</button>
     </div>
   </div>
 
-  <!-- ---------------- Script ---------------- -->
   <script>
-    // ---------------- Guest Mode ----------------
+    // Guest mode
     let user = localStorage.getItem("loggedInUser") || "Guest";
     localStorage.setItem("loggedInUser", user);
-    document.getElementById("welcome").textContent = `Welcome, ${user}!`;
 
-    // ---------------- Live Time ----------------
+    // Live time
     function updateTime() {
       const now = new Date();
       const timeStr = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-      document.getElementById("time").textContent = timeStr;
       document.getElementById("islandTime").textContent = timeStr;
     }
-    setInterval(updateTime, 1000);
+    setInterval(updateTime,1000);
     updateTime();
 
-    // ---------------- Theme Toggle ----------------
+    // Theme toggle
     const themeToggle = document.getElementById("themeToggle");
     if(localStorage.getItem('theme')==='dark'){
-      document.documentElement.classList.add('dark'); 
+      document.documentElement.classList.add('dark');
       themeToggle.checked=true;
     }
     themeToggle?.addEventListener('change', e=>{
@@ -192,49 +241,98 @@
       }
     });
 
-    // ---------------- Settings Modal + Logout ----------------
+    // Settings modal + logout
     function openSettings(){ document.getElementById("settingsModal").classList.remove("hidden"); }
     function closeSettings(){ document.getElementById("settingsModal").classList.add("hidden"); }
     function logout(){
       localStorage.setItem("loggedInUser","Guest");
-      document.getElementById("welcome").textContent="Welcome, Guest!";
+      alert("Logged out! Guest mode activated.");
     }
     window.openSettings=openSettings; window.closeSettings=closeSettings; window.logout=logout;
 
-    // ---------------- Dynamic Island Drag ----------------
+    // Dynamic Island Drag
     const islandWrap = document.getElementById("islandWrap");
-    let isDragging = false;
-    let offsetX = 0;
-    let offsetY = 0;
-
-    islandWrap.addEventListener("mousedown", (e) => {
-      isDragging = true;
-      offsetX = e.clientX - islandWrap.offsetLeft;
-      offsetY = e.clientY - islandWrap.offsetTop;
+    let isDragging=false, offsetX=0, offsetY=0;
+    islandWrap.addEventListener("mousedown",(e)=>{
+      isDragging=true;
+      offsetX=e.clientX - islandWrap.offsetLeft;
+      offsetY=e.clientY - islandWrap.offsetTop;
       islandWrap.classList.add("dragging");
     });
-
-    document.addEventListener("mouseup", () => {
-      isDragging = false;
-      islandWrap.classList.remove("dragging");
-    });
-
-    document.addEventListener("mousemove", (e) => {
-      if (isDragging) {
-        let x = e.clientX - offsetX;
-        let y = e.clientY - offsetY;
-
-        // Constrain within viewport
-        const maxX = window.innerWidth - islandWrap.offsetWidth;
-        const maxY = window.innerHeight - islandWrap.offsetHeight;
-        x = Math.max(0, Math.min(x, maxX));
-        y = Math.max(0, Math.min(y, maxY));
-
-        islandWrap.style.left = `${x}px`;
-        islandWrap.style.top = `${y}px`;
-        islandWrap.style.transform = `none`;
+    document.addEventListener("mouseup",()=>{isDragging=false; islandWrap.classList.remove("dragging");});
+    document.addEventListener("mousemove",(e)=>{
+      if(isDragging){
+        let x=e.clientX-offsetX;
+        let y=e.clientY-offsetY;
+        const maxX=window.innerWidth-islandWrap.offsetWidth;
+        const maxY=window.innerHeight-islandWrap.offsetHeight;
+        x=Math.max(0,Math.min(x,maxX));
+        y=Math.max(0,Math.min(y,maxY));
+        islandWrap.style.left=`${x}px`;
+        islandWrap.style.top=`${y}px`;
+        islandWrap.style.transform=`none`;
       }
     });
+
+    // Widget drag
+    function makeDraggable(widgetId){
+      const w = document.getElementById(widgetId);
+      let dragging=false, wx=0, wy=0;
+      w.addEventListener("mousedown",(e)=>{
+        dragging=true; wx=e.clientX - w.offsetLeft; wy=e.clientY - w.offsetTop;
+        w.classList.add("dragging");
+      });
+      document.addEventListener("mouseup",()=>{dragging=false; w.classList.remove("dragging");});
+      document.addEventListener("mousemove",(e)=>{
+        if(dragging){
+          let x=e.clientX-wx, y=e.clientY-wy;
+          const maxX=window.innerWidth-w.offsetWidth, maxY=window.innerHeight-w.offsetHeight;
+          x=Math.max(0,Math.min(x,maxX));
+          y=Math.max(0,Math.min(y,maxY));
+          w.style.left=`${x}px`; w.style.top=`${y}px`;
+        }
+      });
+    }
+    makeDraggable("widget1");
+    makeDraggable("assignmentsWidget");
+
+    // Accent color picker
+    const accentPicker = document.getElementById("accentColorPicker");
+    function updateAccentColor(color){
+      document.documentElement.style.setProperty('--accent-color', color);
+      document.querySelector('.dyn-island').style.boxShadow = `0 10px 30px ${color}80`;
+      document.querySelector('.sidebar').style.borderLeftColor = `${color}50`;
+      document.querySelector('.sidebar').style.color = color;
+    }
+    const savedAccent = localStorage.getItem("accentColor");
+    if(savedAccent){ accentPicker.value=savedAccent; updateAccentColor(savedAccent); }
+    accentPicker.addEventListener("input", e=>{ updateAccentColor(e.target.value); localStorage.setItem("accentColor", e.target.value); });
+
+    // Background video/image
+    const bgInput = document.getElementById("backgroundMedia");
+    const applyBgBtn = document.getElementById("applyBackground");
+    applyBgBtn.addEventListener("click", ()=>{
+      const url = bgInput.value.trim();
+      if(!url) return;
+      if(url.match(/\.(mp4|webm|ogg)$/i)){
+        let video = document.getElementById("bgVideo");
+        if(!video){
+          video = document.createElement("video");
+          video.id="bgVideo";
+          video.autoplay=true; video.loop=true; video.muted=true;
+          video.style.position="fixed"; video.style.top="0"; video.style.left="0";
+          video.style.width="100%"; video.style.height="100%"; video.style.objectFit="cover"; video.style.zIndex="-1";
+          document.body.appendChild(video);
+        }
+        video.src=url;
+      } else {
+        document.body.style.background=`url(${url}) no-repeat center center fixed`;
+        document.body.style.backgroundSize="cover";
+      }
+      localStorage.setItem("backgroundMedia", url);
+    });
+    const savedBg = localStorage.getItem("backgroundMedia");
+    if(savedBg){ bgInput.value=savedBg; applyBgBtn.click(); }
   </script>
 </body>
 </html>
