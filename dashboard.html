@@ -102,6 +102,13 @@ backdrop-filter:blur(10px);border-left:1px solid rgba(0,255,255,0.3);z-index:50;
       <input type="color" id="textColorPicker" value="#ffffff" class="w-full h-8 cursor-pointer">
     </div>
 
+    <!-- Font Picker -->
+    <div class="mb-4">
+      <label class="block mb-1">Font Family</label>
+      <input type="text" id="fontPicker" placeholder="e.g., Arial, 'Courier New', sans-serif" class="w-full p-1 rounded text-black">
+    </div>
+    <button id="applyFont" class="bg-cyan-400 text-black px-4 py-2 rounded w-full mb-2">Apply Font</button>
+
     <!-- Background Media -->
     <div class="mb-4">
       <label class="block mb-1">Background Media (URL)</label>
@@ -223,6 +230,18 @@ function updateTextColor(color){
 const savedTextColor=localStorage.getItem("textColor");
 if(savedTextColor){ textColorPicker.value=savedTextColor; updateTextColor(savedTextColor); }
 textColorPicker.addEventListener("input", e=>{ updateTextColor(e.target.value); localStorage.setItem('textColor',e.target.value); });
+
+// FONT PICKER
+const fontInput = document.getElementById("fontPicker");
+const applyFontBtn = document.getElementById("applyFont");
+function updateFont(font){ document.body.style.fontFamily = font; }
+const savedFont = localStorage.getItem("dashboardFont");
+if(savedFont){ fontInput.value = savedFont; updateFont(savedFont); }
+applyFontBtn.addEventListener("click", () => {
+  const font = fontInput.value.trim() || "Arial, sans-serif";
+  updateFont(font);
+  localStorage.setItem("dashboardFont", font);
+});
 
 // BACKGROUND IMAGE/VIDEO
 const bgInput=document.getElementById("backgroundMedia");
