@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard — StudySpace Rice Setup</title>
+<title>CopperMier — Dashboard</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 body {
@@ -59,7 +59,7 @@ backdrop-filter:blur(10px);border-left:1px solid rgba(0,255,255,0.3);z-index:50;
 <div class="sidebar-wrapper">
   <aside class="sidebar">
     <div>
-      <h1 class="text-2xl font-bold mb-4" style="color: var(--accent-color)">StudySpace</h1>
+      <h1 class="text-2xl font-bold mb-4" style="color: var(--accent-color)">CopperMier</h1>
       <nav class="space-y-2">
         <a href="dashboard.html" class="block p-2 rounded hover:bg-black/30">🏠 Dashboard</a>
         <a href="assignments.html" class="block p-2 rounded hover:bg-black/30">📝 Assignments</a>
@@ -142,11 +142,13 @@ document.addEventListener("mousemove",e=>{
   }
 });
 
-/* WIDGETS (Predefined only) */
+/* WIDGETS (Predefined only, positions saved) */
 const GRID_SIZE=20;
-let widgets=JSON.parse(localStorage.getItem('widgets')) || [
-  { id: 'assignmentsWidget', top: 100, left: 100, title: 'Assignments', content: '', width: 220, height: 120 }
-];
+let widgets=JSON.parse(localStorage.getItem('widgets'));
+if(!widgets){
+  widgets=[{ id:'assignmentsWidget', top:100, left:100, title:'Assignments', content:'', width:220, height:120 }];
+  localStorage.setItem('widgets',JSON.stringify(widgets));
+}
 
 function createWidget({id, top, left, title, content, width=220, height=120}){
   const w=document.createElement('div'); w.className='widget'; w.id=id;
@@ -155,12 +157,12 @@ function createWidget({id, top, left, title, content, width=220, height=120}){
   document.body.appendChild(w); makeDraggable(id);
 }
 
-// Draggable
+// Draggable with grid snapping and saving
 function makeDraggable(widgetId){
   const w=document.getElementById(widgetId);
   let dragging=false, wx=0, wy=0;
   w.addEventListener("mousedown", e=>{ dragging=true; wx=e.clientX-w.offsetLeft; wy=e.clientY-w.offsetTop; w.classList.add("dragging");});
-  document.addEventListener("mouseup", ()=>{ dragging=false; w.classList.remove("dragging"); });
+  document.addEventListener("mouseup", ()=>{ dragging=false; w.classList.remove("dragging"); localStorage.setItem('widgets',JSON.stringify(widgets)); });
   document.addEventListener("mousemove", e=>{
     if(dragging){
       let x=e.clientX-wx, y=e.clientY-wy;
@@ -169,7 +171,7 @@ function makeDraggable(widgetId){
       y=Math.max(0, Math.min(y, window.innerHeight-w.offsetHeight));
       w.style.left=`${x}px`; w.style.top=`${y}px`;
       const index=widgets.findIndex(widget=>widget.id===widgetId);
-      if(index!==-1){ widgets[index].top=y; widgets[index].left=x; localStorage.setItem('widgets',JSON.stringify(widgets)); }
+      if(index!==-1){ widgets[index].top=y; widgets[index].left=x; }
     }
   });
 }
@@ -192,7 +194,7 @@ accentPicker.addEventListener("input", e=>{ updateAccentColor(e.target.value); l
 /* TEXT COLOR */
 const textColorPicker=document.getElementById('textColorPicker');
 function updateTextColor(color){
-  document.documentElement.style.setProperty('--text-color', color);
+  document.documentElement.style.setProperty('--text-color',color);
   document.querySelectorAll('.widget').forEach(w=>{ w.style.color=color; });
 }
 const savedTextColor=localStorage.getItem('textColor');
